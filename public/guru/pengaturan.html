@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pengaturan - Penilaian Biologi</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" type="image/png" href="../images/icon-192.png">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nilai Biologi">
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+</head>
+<body>
+  <div class="app-layout">
+    <button class="sidebar-toggle" aria-label="Menu">☰</button>
+    <div class="sidebar-overlay"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <img src="../images/logo.png" alt="Logo SMA Negeri 2 Ciamis" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkivZZWq710R9bcyNcRC5qdeCUQ-JhiFTtUJ5vYfSG-nGZqXLM-mfZFDnoxuENZ3LWV1Tk9NGomIpD1XygvXTJMbczibyejOxEx6-_Y9rVB_Cr91KdTQuk1UjXwNugQPx-o9ei7t3BxC-f40yuK-bmp47VkKHaoOhOzqESITzCQV50QIxNc32bv65Qom9q/s320/download.png'">
+          </div>
+          <div><div class="brand-text">Penilaian Biologi</div><div class="brand-sub">SMA Negeri 2 Ciamis</div></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Menu Utama</div>
+          <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+          <a href="input-nilai.html" class="nav-item"><span class="nav-icon">📝</span> Input Nilai</a>
+          <a href="manage-siswa.html" class="nav-item"><span class="nav-icon">👥</span> Data Siswa</a>
+          <a href="rekap.html" class="nav-item"><span class="nav-icon">📋</span> Rekap Nilai</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Pengaturan</div>
+          <a href="pengaturan.html" class="nav-item active"><span class="nav-icon">⚙️</span> Pengaturan</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">
+            <img src="../images/guru.png" alt="Foto Guru" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjhpg2qFZEUpqZXmvHPlKO0KNTcnF4RIEQSXTC33imZvn1rcRXGAGx-djkgIhouQtoFHUdGUzu8EKMh8wrWJUrkH95W3W8mw3w03DJe4p8WVsmYXf8jys8j4_xxf5aVL3sWgbVxiEv4ICnLQWDLt55rvn-icJYpV5a3nOCn1L46CI6WSvItOFdjfnQVfZSN/s320/OmzeeGhotoen_24.png'">
+          </div>
+          <div class="user-info"><div class="user-name" id="userName">Guru</div><div class="user-role">Guru Biologi</div></div>
+        </div>
+        <button class="sidebar-logout" onclick="API.logout()"><span>🚪</span> Keluar</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <div><h1 class="page-title">⚙️ Pengaturan</h1><p class="page-subtitle">Konfigurasi penilaian dan akun</p></div>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="grid grid-2">
+          <!-- KKM & Bobot -->
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">📐 KKM & Bobot Penilaian</h4>
+            </div>
+            <div class="card-body">
+              <div class="form-group mb-5">
+                <label class="form-label">Kriteria Ketuntasan Minimal (KKM)</label>
+                <input type="number" class="form-input" id="settKKM" min="0" max="100" value="75">
+              </div>
+              
+              <!-- 1. Bobot Topik -->
+              <div style="background: var(--bg-main, #f8fafc); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 18px;">
+                <div class="flex justify-between items-center mb-2">
+                  <h5 style="color: var(--primary); font-size: 0.9rem; margin:0;">1. Bobot Nilai Akhir Tiap Topik / Materi</h5>
+                  <span class="badge" id="totalBobotTopikBadge">100%</span>
+                </div>
+                <p class="text-xs text-muted mb-3">Dihitung dari komponen Harian, Praktikum, dan ASLM pada topik bersangkutan (ASAS/ASAT tidak dilibatkan).</p>
+                
+                <div class="form-group">
+                  <label class="form-label text-xs">Penilaian Harian / Tugas (%)</label>
+                  <input type="number" class="form-input" id="settBobotTopikHarian" min="0" max="100" value="30" oninput="updateTotalBobot()">
+                </div>
+                <div class="form-group">
+                  <label class="form-label text-xs">Penilaian Praktikum (%)</label>
+                  <input type="number" class="form-input" id="settBobotTopikPraktikum" min="0" max="100" value="30" oninput="updateTotalBobot()">
+                </div>
+                <div class="form-group mb-1">
+                  <label class="form-label text-xs">Asesmen Sumatif Lingkup Materi / ASLM (%)</label>
+                  <input type="number" class="form-input" id="settBobotTopikASLM" min="0" max="100" value="40" oninput="updateTotalBobot()">
+                </div>
+              </div>
+
+              <!-- 2. Bobot Semester / Raport -->
+              <div style="background: var(--bg-main, #f8fafc); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 18px;">
+                <div class="flex justify-between items-center mb-2">
+                  <h5 style="color: var(--primary); font-size: 0.9rem; margin:0;">2. Bobot Nilai Akhir Semester (Nilai Raport)</h5>
+                  <span class="badge" id="totalBobotSemBadge">100%</span>
+                </div>
+                <p class="text-xs text-muted mb-3">Dihitung dari Rata-rata Nilai Akhir Topik dengan ASAS (Semester Ganjil) atau ASAT (Semester Genap).</p>
+                
+                <div class="form-group">
+                  <label class="form-label text-xs">Rata-rata Nilai Akhir Seluruh Topik (%)</label>
+                  <input type="number" class="form-input" id="settBobotSemTopik" min="0" max="100" value="60" oninput="updateTotalBobot()">
+                </div>
+                <div class="form-group mb-1">
+                  <label class="form-label text-xs">Asesmen Sumatif Akhir Semester/Tahun (ASAS / ASAT) (%)</label>
+                  <input type="number" class="form-input" id="settBobotSemASAS" min="0" max="100" value="40" oninput="updateTotalBobot()">
+                </div>
+              </div>
+
+              <button class="btn btn-primary w-full" onclick="saveSettings()">💾 Simpan KKM & Bobot Penilaian</button>
+            </div>
+          </div>
+
+          <!-- Account & Info -->
+          <div class="flex-col gap-6" style="display: flex;">
+            <!-- Mode Kolom Tugas Per Kelas -->
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">⚙️ Mode Kolom Tugas Penilaian</h4>
+              </div>
+              <div class="card-body">
+                <p class="text-sm text-muted mb-4">
+                  Pilih apakah kolom tugas dibuat berbeda untuk setiap kelas, atau seragam untuk semua kelas.
+                </p>
+                <div class="form-group mb-4">
+                  <div class="flex-col gap-3" style="display: flex;">
+                    <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-slate-50 transition" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; padding: 12px; display: flex; align-items: flex-start;">
+                      <input type="radio" name="modeKolomKelas" id="modePerKelas" value="per_kelas" checked style="margin-top: 4px;">
+                      <div>
+                        <strong style="color: var(--text-primary); display: block;">Independen Per Kelas (Rekomendasi)</strong>
+                        <span class="text-xs text-muted">Setiap kelas (11 F1, 11 F2, dst) memiliki daftar kolom tugas/praktikum tersendiri. Menambah atau menghapus tugas pada kelas tertentu tidak memengaruhi kelas lainnya.</span>
+                      </div>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-slate-50 transition" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; padding: 12px; display: flex; align-items: flex-start;">
+                      <input type="radio" name="modeKolomKelas" id="modeSemuaKelas" value="semua_kelas" style="margin-top: 4px;">
+                      <div>
+                        <strong style="color: var(--text-primary); display: block;">Seragam Untuk Semua Kelas</strong>
+                        <span class="text-xs text-muted">Satu kumpulan kolom tugas digunakan bersamaan oleh seluruh kelas (seperti konfigurasi awal).</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+                <button class="btn btn-primary w-full" onclick="saveColumnMode()">💾 Simpan Mode Kolom</button>
+              </div>
+            </div>
+
+            <!-- Semester Info -->
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">📅 Informasi Akademik</h4>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label">Semester</label>
+                  <select class="form-select" id="settSemester">
+                    <option value="Ganjil">Ganjil</option>
+                    <option value="Genap">Genap</option>
+                    <option value="Ganjil & Genap">Ganjil & Genap</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Tahun Ajaran</label>
+                  <input type="text" class="form-input" id="settTahunAjaran" value="2026/2027">
+                </div>
+                <button class="btn btn-secondary w-full" onclick="saveAcademicInfo()">Simpan Info Akademik</button>
+              </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">🔒 Ubah Password Guru</h4>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label">Password Lama</label>
+                  <input type="password" class="form-input" id="oldPassword">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Password Baru</label>
+                  <input type="password" class="form-input" id="newPassword">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Konfirmasi Password Baru</label>
+                  <input type="password" class="form-input" id="confirmPassword">
+                </div>
+                <button class="btn btn-primary w-full" onclick="changePassword()">🔑 Ubah Password</button>
+              </div>
+            </div>
+
+            <!-- API Config -->
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">🔗 Konfigurasi API</h4>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label">URL Google Apps Script</label>
+                  <input type="url" class="form-input" id="apiUrlConfig" value="">
+                </div>
+                <button class="btn btn-secondary w-full" onclick="saveApiConfig()">Simpan URL API</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manajemen Topik & Materi Card -->
+        <div class="card mt-6" style="border-left: 4px solid var(--primary);">
+          <div class="card-header flex justify-between items-center" style="flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h4 class="card-title">🧬 Manajemen Topik & Materi Biologi</h4>
+              <p class="text-sm text-muted">Daftar topik pembelajaran untuk Semester Ganjil dan Semester Genap</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="btn-group" style="display: flex; gap: 4px; background: var(--bg-hover); padding: 3px; border-radius: 8px;">
+                <button type="button" class="btn btn-sm btn-primary" id="btnTopicGanjil" onclick="switchSettingsTopicTab('Ganjil')">📘 Semester Ganjil</button>
+                <button type="button" class="btn btn-sm btn-ghost" id="btnTopicGenap" onclick="switchSettingsTopicTab('Genap')">📗 Semester Genap</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Table of Topics -->
+            <div class="table-container mb-4" style="border: 1px solid var(--border-color); border-radius: 8px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 70px;">ID</th>
+                    <th>Judul Topik / Materi</th>
+                    <th style="width: 100px;">Semester</th>
+                    <th>Deskripsi</th>
+                    <th style="width: 100px; text-align: center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="settingsTopicBody">
+                  <tr><td colspan="5" class="text-center text-muted" style="padding: var(--space-4);">Memuat data topik...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Form Tambah Topik -->
+            <div style="background: var(--bg-hover); padding: 14px; border-radius: 8px; border: 1px dashed var(--border-color);">
+              <h5 style="margin-bottom: 10px; font-size: 0.95rem;">➕ Tambah Topik Baru</h5>
+              <div class="grid grid-3 gap-3 mb-3">
+                <div>
+                  <label class="form-label text-xs">Judul Topik <span class="text-danger">*</span></label>
+                  <input type="text" class="form-input" id="settNewTopicTitle" placeholder="Contoh: Bioteknologi Modern">
+                </div>
+                <div>
+                  <label class="form-label text-xs">Semester</label>
+                  <select class="form-select" id="settNewTopicSemester">
+                    <option value="Ganjil">Semester Ganjil</option>
+                    <option value="Genap">Semester Genap</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label text-xs">Deskripsi Singkat</label>
+                  <input type="text" class="form-input" id="settNewTopicDesc" placeholder="Ringkasan materi">
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary btn-sm" onclick="addSettingsTopic()">Simpan Topik Baru</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.requireAuth('guru')) return;
+      UI.initSidebar();
+      const user = API.getUser();
+      document.getElementById('userName').textContent = user.name || 'Guru';
+      UI.renderAvatar(document.getElementById('userAvatar'), user);
+      document.getElementById('apiUrlConfig').value = API.getBaseUrl();
+
+      // Load current settings
+      try {
+        const res = await API.getSettings();
+        const s = res.settings;
+        document.getElementById('settKKM').value = s.kkm;
+        
+        // Bobot Topik
+        document.getElementById('settBobotTopikHarian').value = s.bobot_topik_harian ?? s.bobot_harian ?? 30;
+        document.getElementById('settBobotTopikPraktikum').value = s.bobot_topik_praktikum ?? s.bobot_praktikum ?? 30;
+        document.getElementById('settBobotTopikASLM').value = s.bobot_topik_aslm ?? s.bobot_aslm ?? 40;
+        
+        // Bobot Semester
+        document.getElementById('settBobotSemTopik').value = s.bobot_semester_topik ?? 60;
+        document.getElementById('settBobotSemASAS').value = s.bobot_semester_asas ?? s.bobot_asas ?? 40;
+
+        document.getElementById('settSemester').value = s.semester;
+        document.getElementById('settTahunAjaran').value = s.tahun_ajaran;
+        if (s.mode_kolom_kelas === 'semua_kelas') {
+          document.getElementById('modeSemuaKelas').checked = true;
+        } else {
+          document.getElementById('modePerKelas').checked = true;
+        }
+        updateTotalBobot();
+      } catch (err) {
+        UI.toastError('Error', 'Gagal memuat pengaturan: ' + err.message);
+      }
+    });
+
+    function updateTotalBobot() {
+      // 1. Bobot Topik
+      const th = Number(document.getElementById('settBobotTopikHarian').value) || 0;
+      const tp = Number(document.getElementById('settBobotTopikPraktikum').value) || 0;
+      const tl = Number(document.getElementById('settBobotTopikASLM').value) || 0;
+      const totTopik = th + tp + tl;
+      const bTopik = document.getElementById('totalBobotTopikBadge');
+      if (bTopik) {
+        bTopik.textContent = totTopik + '%';
+        bTopik.className = 'badge ' + (totTopik === 100 ? 'badge-success' : 'badge-danger');
+      }
+
+      // 2. Bobot Semester
+      const st = Number(document.getElementById('settBobotSemTopik').value) || 0;
+      const sa = Number(document.getElementById('settBobotSemASAS').value) || 0;
+      const totSem = st + sa;
+      const bSem = document.getElementById('totalBobotSemBadge');
+      if (bSem) {
+        bSem.textContent = totSem + '%';
+        bSem.className = 'badge ' + (totSem === 100 ? 'badge-success' : 'badge-danger');
+      }
+    }
+
+    async function saveColumnMode() {
+      const mode = document.querySelector('input[name="modeKolomKelas"]:checked')?.value || 'per_kelas';
+      UI.showLoading('Menyimpan mode kolom...');
+      try {
+        await API.updateSettings({
+          mode_kolom_kelas: mode
+        });
+        UI.toastSuccess('Berhasil', 'Mode kolom penilaian berhasil disimpan');
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    async function saveSettings() {
+      const th = Number(document.getElementById('settBobotTopikHarian').value) || 0;
+      const tp = Number(document.getElementById('settBobotTopikPraktikum').value) || 0;
+      const tl = Number(document.getElementById('settBobotTopikASLM').value) || 0;
+      const totTopik = th + tp + tl;
+
+      const st = Number(document.getElementById('settBobotSemTopik').value) || 0;
+      const sa = Number(document.getElementById('settBobotSemASAS').value) || 0;
+      const totSem = st + sa;
+
+      if (totTopik !== 100) {
+        UI.toastWarning('Peringatan', `Total Bobot Tiap Topik harus 100%, saat ini ${totTopik}%`);
+        return;
+      }
+      if (totSem !== 100) {
+        UI.toastWarning('Peringatan', `Total Bobot Semester (Raport) harus 100%, saat ini ${totSem}%`);
+        return;
+      }
+
+      UI.showLoading('Menyimpan pengaturan...');
+      try {
+        await API.updateSettings({
+          kkm: Number(document.getElementById('settKKM').value),
+          bobot_topik_harian: th,
+          bobot_topik_praktikum: tp,
+          bobot_topik_aslm: tl,
+          bobot_semester_topik: st,
+          bobot_semester_asas: sa,
+          bobot_harian: th,
+          bobot_praktikum: tp,
+          bobot_aslm: tl,
+          bobot_asas: sa
+        });
+        UI.toastSuccess('Berhasil', 'Pengaturan KKM dan bobot berhasil disimpan');
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    async function saveAcademicInfo() {
+      UI.showLoading('Menyimpan...');
+      try {
+        await API.updateSettings({
+          semester: document.getElementById('settSemester').value,
+          tahun_ajaran: document.getElementById('settTahunAjaran').value
+        });
+        UI.toastSuccess('Berhasil', 'Info akademik berhasil disimpan');
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    async function changePassword() {
+      const oldPwd = document.getElementById('oldPassword').value;
+      const newPwd = document.getElementById('newPassword').value;
+      const confirmPwd = document.getElementById('confirmPassword').value;
+
+      if (!oldPwd || !newPwd) {
+        UI.toastError('Error', 'Semua field password harus diisi');
+        return;
+      }
+      if (newPwd !== confirmPwd) {
+        UI.toastError('Error', 'Password baru dan konfirmasi tidak cocok');
+        return;
+      }
+      if (newPwd.length < 6) {
+        UI.toastError('Error', 'Password minimal 6 karakter');
+        return;
+      }
+
+      UI.showLoading('Mengubah password...');
+      try {
+        await API.changePassword(oldPwd, newPwd);
+        UI.toastSuccess('Berhasil', 'Password guru berhasil diubah');
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function saveApiConfig() {
+      const url = document.getElementById('apiUrlConfig').value.trim();
+      if (!url) {
+        UI.toastError('Error', 'URL tidak boleh kosong');
+        return;
+      }
+      API.setBaseUrl(url);
+      UI.toastSuccess('Berhasil', 'URL API berhasil disimpan');
+    }
+
+    // ============================================================
+    // Topik & Materi Management (Pengaturan)
+    // ============================================================
+    let settingsTopics = [];
+    let activeSettingsTopicTab = 'Ganjil';
+
+    async function loadSettingsTopics() {
+      try {
+        const res = await API.getTopics();
+        settingsTopics = res.topics || [];
+        renderSettingsTopics();
+      } catch (e) {
+        console.error('Gagal memuat topik:', e);
+      }
+    }
+
+    function switchSettingsTopicTab(semester) {
+      activeSettingsTopicTab = semester;
+      document.getElementById('btnTopicGanjil').className = `btn btn-sm ${semester === 'Ganjil' ? 'btn-primary' : 'btn-ghost'}`;
+      document.getElementById('btnTopicGenap').className = `btn btn-sm ${semester === 'Genap' ? 'btn-primary' : 'btn-ghost'}`;
+      renderSettingsTopics();
+    }
+
+    function renderSettingsTopics() {
+      const tbody = document.getElementById('settingsTopicBody');
+      const filtered = settingsTopics.filter(t => t.semester === activeSettingsTopicTab);
+
+      if (!filtered || filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding: var(--space-4);">Belum ada topik di Semester ${activeSettingsTopicTab}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(t => `
+        <tr>
+          <td><span class="badge badge-info" style="font-weight:700;">${t.id}</span></td>
+          <td><strong>${UI.escapeHtml(t.judul)}</strong></td>
+          <td><span class="badge badge-outline">Semester ${t.semester}</span></td>
+          <td><span class="text-xs text-muted">${UI.escapeHtml(t.deskripsi || '-')}</span></td>
+          <td style="text-align: center;">
+            <div style="display:flex; justify-content:center; gap:4px;">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="editSettingsTopic('${t.id}')" title="Edit">✏️</button>
+              <button type="button" class="btn btn-ghost btn-sm text-danger" onclick="deleteSettingsTopic('${t.id}', '${UI.escapeHtml(t.judul)}')" title="Hapus">🗑</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function addSettingsTopic() {
+      const judul = document.getElementById('settNewTopicTitle')?.value.trim();
+      const semester = document.getElementById('settNewTopicSemester')?.value || 'Ganjil';
+      const deskripsi = document.getElementById('settNewTopicDesc')?.value.trim() || '';
+
+      if (!judul) {
+        UI.toastError('Error', 'Judul Topik harus diisi');
+        return;
+      }
+
+      UI.showLoading('Menambahkan topik...');
+      try {
+        await API.addTopic(judul, semester, deskripsi);
+        UI.toastSuccess('Berhasil', `Topik "${judul}" berhasil ditambahkan`);
+        document.getElementById('settNewTopicTitle').value = '';
+        document.getElementById('settNewTopicDesc').value = '';
+        await loadSettingsTopics();
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function editSettingsTopic(id) {
+      const topic = settingsTopics.find(t => t.id === id);
+      if (!topic) return;
+
+      const content = `
+        <div class="form-group mb-3">
+          <label class="form-label">ID Topik</label>
+          <input type="text" class="form-input" value="${topic.id}" readonly style="background: var(--bg-hover); opacity: 0.85;">
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Judul Topik / Materi <span class="text-danger">*</span></label>
+          <input type="text" class="form-input" id="editSettTopicJudul" value="${UI.escapeHtml(topic.judul)}" placeholder="Judul topik materi">
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Semester</label>
+          <select class="form-select" id="editSettTopicSemester">
+            <option value="Ganjil" ${topic.semester === 'Ganjil' ? 'selected' : ''}>Semester Ganjil</option>
+            <option value="Genap" ${topic.semester === 'Genap' ? 'selected' : ''}>Semester Genap</option>
+          </select>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Deskripsi Topik / Materi</label>
+          <textarea class="form-textarea" id="editSettTopicDesc" rows="3" placeholder="Tuliskan deskripsi atau ringkasan topik materi...">${UI.escapeHtml(topic.deskripsi || '')}</textarea>
+          <div class="form-hint">Deskripsi ini akan tampil pada kartu topik siswa dan guru sebagai ringkasan materi.</div>
+        </div>
+      `;
+
+      const footer = `
+        <div class="flex gap-3" style="justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="UI.hideModal('editSettTopicModal')">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="submitEditSettingsTopic('${topic.id}')">💾 Simpan Perubahan</button>
+        </div>
+      `;
+
+      UI.createModal('editSettTopicModal', `✏️ Edit Topik & Materi (${topic.id})`, content, footer);
+      UI.showModal('editSettTopicModal');
+      setTimeout(() => document.getElementById('editSettTopicJudul')?.focus(), 300);
+    }
+
+    async function submitEditSettingsTopic(id) {
+      const topic = settingsTopics.find(t => t.id === id);
+      if (!topic) return;
+
+      const judul = document.getElementById('editSettTopicJudul')?.value.trim();
+      const semester = document.getElementById('editSettTopicSemester')?.value || topic.semester;
+      const deskripsi = document.getElementById('editSettTopicDesc')?.value.trim() || '';
+
+      if (!judul) {
+        UI.toastError('Error', 'Judul Topik tidak boleh kosong');
+        return;
+      }
+
+      UI.hideModal('editSettTopicModal');
+      UI.showLoading('Memperbarui topik...');
+
+      try {
+        await API.updateTopic(id, judul, semester, deskripsi, topic.urutan);
+        UI.toastSuccess('Berhasil', `Topik ${id} berhasil diperbarui`);
+        await loadSettingsTopics();
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function deleteSettingsTopic(id, judul) {
+      UI.confirm(
+        '🗑 Hapus Topik',
+        `Yakin ingin menghapus topik "${judul}" (${id})?`,
+        async () => {
+          UI.showLoading('Menghapus topik...');
+          try {
+            await API.deleteTopic(id);
+            UI.toastSuccess('Berhasil', `Topik ${id} berhasil dihapus`);
+            await loadSettingsTopics();
+          } catch (err) {
+            UI.toastError('Gagal', err.message);
+          } finally {
+            UI.hideLoading();
+          }
+        }
+      );
+    }
+
+    // Call on load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSettingsTopics();
+    });
+  </script>
+</body>
+</html>

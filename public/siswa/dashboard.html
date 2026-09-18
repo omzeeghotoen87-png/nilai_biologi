@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Siswa - Penilaian Biologi</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" type="image/png" href="../images/icon-192.png">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nilai Biologi">
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <button class="sidebar-toggle" aria-label="Menu">☰</button>
+    <div class="sidebar-overlay"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <img src="../images/logo.png" alt="Logo SMA Negeri 2 Ciamis" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkivZZWq710R9bcyNcRC5qdeCUQ-JhiFTtUJ5vYfSG-nGZqXLM-mfZFDnoxuENZ3LWV1Tk9NGomIpD1XygvXTJMbczibyejOxEx6-_Y9rVB_Cr91KdTQuk1UjXwNugQPx-o9ei7t3BxC-f40yuK-bmp47VkKHaoOhOzqESITzCQV50QIxNc32bv65Qom9q/s320/download.png'">
+          </div>
+          <div><div class="brand-text">Penilaian Biologi</div><div class="brand-sub">SMA Negeri 2 Ciamis</div></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Menu</div>
+          <a href="dashboard.html" class="nav-item active"><span class="nav-icon">🏠</span> Dashboard</a>
+          <a href="nilai.html" class="nav-item"><span class="nav-icon">📋</span> Detail Nilai</a>
+          <a href="grafik.html" class="nav-item"><span class="nav-icon">📈</span> Grafik</a>
+          <a href="profil.html" class="nav-item"><span class="nav-icon">👤</span> Profil</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">??</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Siswa</div>
+            <div class="user-role" id="userClass">Kelas -</div>
+          </div>
+        </div>
+        <button class="sidebar-logout" onclick="API.logout()"><span>🚪</span> Keluar</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <div>
+            <h1 class="page-title">🏠 Dashboard</h1>
+            <p class="page-subtitle" id="greeting">Selamat datang!</p>
+          </div>
+        </div>
+        <div class="top-bar-right flex items-center gap-3">
+          <select class="form-select" id="studentTopicFilter" onchange="onStudentTopicFilterChange()" style="font-size:0.85rem; padding: 6px 10px; max-width: 230px;">
+            <option value="ALL">Semua Topik Nilai</option>
+          </select>
+          <!-- Notification Bell -->
+          <div class="notification-bell" id="notifBell" onclick="toggleNotifications()">
+            <span class="bell-icon">🔔</span>
+            <span class="bell-badge" id="notifBadge" style="display:none;">0</span>
+            <div class="notification-dropdown" id="notifDropdown">
+              <div class="notification-dropdown-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <h4 style="margin: 0; font-size: 0.95rem;">Notifikasi</h4>
+                  <span class="badge badge-info" id="notifUnreadCount" style="font-size: 0.68rem; padding: 2px 6px; display: none;">0 Baru</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <button type="button" class="btn btn-ghost btn-sm" id="btnMarkAllNotifs" onclick="event.stopPropagation(); markAllNotifsAsRead();" title="Tandai semua sudah dibaca" style="font-size: 0.72rem; padding: 3px 6px; display: none; color: var(--primary-400);">
+                    ✓ Baca Semua
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); loadNotifications();" title="Segarkan notifikasi" style="font-size: 0.8rem; padding: 3px 6px;">🔄</button>
+                </div>
+              </div>
+              <div class="notification-list" id="notifList">
+                <div class="notification-empty">Belum ada pembaruan nilai</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Welcome Card -->
+        <div class="card mb-6" style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.15), rgba(6, 182, 212, 0.1)); border-color: rgba(5, 150, 105, 0.3);">
+          <div class="flex items-center gap-6" style="flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+              <h2 id="welcomeName" style="margin-bottom: var(--space-2);">Halo!</h2>
+              <p class="text-muted" id="welcomeInfo">NIS: - | Kelas: -</p>
+              <p class="text-sm text-muted mt-2" id="welcomeDate"></p>
+            </div>
+            <div style="text-align: center;">
+              <div id="finalGradeDisplay" style="font-family: var(--font-heading); font-size: 3rem; font-weight: 800; line-height: 1;">-</div>
+              <div class="text-sm text-muted" id="finalGradeTitle">Nilai Akhir</div>
+              <div id="predikatDisplay" class="mt-2"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incomplete Assessments Warning Banner (Alert All Topics) -->
+        <div id="incompleteAssessmentsAlert" class="mb-6"></div>
+
+        <!-- Topic Showcase & Selection for Student -->
+        <div class="card mb-6" style="border-left: 4px solid var(--primary);">
+          <div class="card-header flex justify-between items-center" style="flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h3 class="card-title" style="display: flex; align-items: center; gap: 8px; font-size: 1.15rem;">
+                <span>🧬</span> Topik & Capaian Materi Biologi
+              </h3>
+              <p class="text-sm text-muted" style="margin-top: 2px;">
+                Pilih topik materi di bawah untuk melihat rincian capaian nilaimu.
+              </p>
+            </div>
+            <div class="btn-group" id="studentSemesterPills" style="display: flex; gap: 4px; background: var(--bg-hover); padding: 3px; border-radius: 8px;">
+              <button type="button" class="btn btn-sm btn-primary" id="btnSiswaSemGanjil" onclick="selectStudentTopicTab('Ganjil')">📘 Semester Ganjil</button>
+              <button type="button" class="btn btn-sm btn-ghost" id="btnSiswaSemGenap" onclick="selectStudentTopicTab('Genap')">📗 Semester Genap</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid grid-3 gap-4 stagger" id="studentTopicCards">
+              <!-- Dynamically populated student topic cards with scores -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Grade Summary Cards -->
+        <div class="grid grid-4 stagger mb-6" id="gradeSummary">
+          <div class="card stat-card">
+            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.15);">📘</div>
+            <div class="stat-value" id="avgHarian">-</div>
+            <div class="stat-label">Penilaian Harian</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15);">🔬</div>
+            <div class="stat-value" id="avgPraktikum">-</div>
+            <div class="stat-label">Praktikum</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15);">📑</div>
+            <div class="stat-value" id="avgASLM">-</div>
+            <div class="stat-label">ASLM</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="background: rgba(244, 63, 94, 0.15);">📄</div>
+            <div class="stat-value" id="avgASAS">-</div>
+            <div class="stat-label">ASAS</div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">📈 Perkembangan Nilai Harian</h4>
+            </div>
+            <div class="card-body">
+              <canvas id="harianChart" height="250"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🎯 Profil Nilai</h4>
+            </div>
+            <div class="card-body">
+              <canvas id="radarChart" height="250"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js"></script>
+  <script>
+    let user;
+    let lastNotifCount = 0;
+    let allTopics = [];
+    let topicSummaries = [];
+    let currentStudentTopicTab = 'Ganjil';
+    let harianChartInstance = null;
+    let radarChartInstance = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.requireAuth('siswa')) return;
+      UI.initSidebar();
+
+      user = API.getUser();
+      document.getElementById('userName').textContent = user.nama;
+      UI.renderAvatar(document.getElementById('userAvatar'), user);
+      document.getElementById('userClass').textContent = `Kelas ${user.kelas}`;
+      document.getElementById('welcomeName').textContent = `Halo, ${user.nama}! 👋`;
+      document.getElementById('welcomeInfo').textContent = `NIS: ${user.nis} | Kelas: ${user.kelas}`;
+      document.getElementById('welcomeDate').textContent = 
+        new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      const hour = new Date().getHours();
+      let greetText = 'Selamat pagi';
+      if (hour >= 12 && hour < 15) greetText = 'Selamat siang';
+      else if (hour >= 15 && hour < 18) greetText = 'Selamat sore';
+      else if (hour >= 18) greetText = 'Selamat malam';
+      document.getElementById('greeting').textContent = `${greetText}, ${user.nama}!`;
+
+      // Load Topics and Topic Summaries
+      await loadTopicsAndSummaries();
+
+      // Load Incomplete Assessments Warning Banner (all topics)
+      await loadIncompleteAssessments();
+
+      // Load initial dashboard data (Semua Topik)
+      await loadDashboardData();
+      
+      // Start polling for notifications (every 30 seconds)
+      UI.startPolling(loadNotifications, 30000);
+    });
+
+    async function loadTopicsAndSummaries() {
+      try {
+        const [topRes, sumRes] = await Promise.all([
+          API.getTopics(),
+          API.getStudentTopicSummary(user.nis, user.kelas)
+        ]);
+        allTopics = topRes.topics || [];
+        topicSummaries = sumRes.topics || [
+          ...(sumRes.summaryGanjil || []),
+          ...(sumRes.summaryGenap || [])
+        ];
+
+        populateStudentTopicFilter();
+        renderStudentTopicCards();
+      } catch (e) {
+        console.error('Gagal memuat topik siswa:', e);
+      }
+    }
+
+    function populateStudentTopicFilter() {
+      const select = document.getElementById('studentTopicFilter');
+      const currentVal = select.value;
+
+      let html = '<option value="ALL">Semua Topik Nilai (Umum)</option>';
+      allTopics.forEach(t => {
+        html += `<option value="${t.id}">${t.id}: ${UI.escapeHtml(t.judul)} (${t.semester})</option>`;
+      });
+      select.innerHTML = html;
+
+      if (allTopics.some(t => t.id === currentVal)) {
+        select.value = currentVal;
+      } else {
+        select.value = 'ALL';
+      }
+    }
+
+    function selectStudentTopicTab(semester) {
+      currentStudentTopicTab = semester;
+      document.getElementById('btnSiswaSemGanjil').className = `btn btn-sm ${semester === 'Ganjil' ? 'btn-primary' : 'btn-ghost'}`;
+      document.getElementById('btnSiswaSemGenap').className = `btn btn-sm ${semester === 'Genap' ? 'btn-primary' : 'btn-ghost'}`;
+      renderStudentTopicCards();
+    }
+
+    function getTopicKetuntasan(sumItem) {
+      if (!sumItem) return { status: null, badgeHtml: '', isTuntas: false, score: null, hasAny: false, hasAll: false };
+
+      const hasHarian = sumItem.harian !== null && sumItem.harian !== undefined && sumItem.harian !== '';
+      const hasPraktikum = sumItem.praktikum !== null && sumItem.praktikum !== undefined && sumItem.praktikum !== '';
+      const hasAslm = sumItem.aslm !== null && sumItem.aslm !== undefined && sumItem.aslm !== '';
+      const hasAny = hasHarian || hasPraktikum || hasAslm;
+
+      // Biarkan kosong tanpa keterangan jika belum ada salah satupun penilaian terinput pada setiap topik materinya
+      if (!hasAny) {
+        return { status: null, badgeHtml: '', isTuntas: false, score: null, hasAny: false, hasAll: false };
+      }
+
+      const hasAll = hasHarian && hasPraktikum && hasAslm;
+      const rawScore = (sumItem.nilaiAkhir !== undefined && sumItem.nilaiAkhir !== null)
+        ? sumItem.nilaiAkhir
+        : ((sumItem.nilaiTopik !== undefined && sumItem.nilaiTopik !== null)
+          ? sumItem.nilaiTopik
+          : ((sumItem.rataRata !== undefined && sumItem.rataRata !== null) ? sumItem.rataRata : null));
+      
+      const score = (rawScore !== null && rawScore !== undefined && !isNaN(rawScore)) ? Number(rawScore) : null;
+
+      // 1) TUNTAS, jika siswa telah menyelesaikan semua jenis penilaian (harian, praktikum, dan ASLM) dengan perolehan nilai akhir setiap topik ≥ 80
+      if (hasAll && score !== null && score >= 80) {
+        return {
+          status: 'TUNTAS',
+          badgeHtml: '<span class="badge badge-success" style="font-size:0.75rem; font-weight:700; padding:3px 8px; letter-spacing:0.3px;">✓ TUNTAS</span>',
+          isTuntas: true,
+          score,
+          hasAny,
+          hasAll
+        };
+      }
+
+      // 2) TUNTAS DENGAN PERBAIKAN, jika siswa telah menyelesaikan semua jenis penilaian (harian, praktikum, dan ASLM) dengan perolehan 75 ≤ Nilai akhir setiap topik < 80
+      if (hasAll && score !== null && score >= 75) {
+        return {
+          status: 'TUNTAS DENGAN PERBAIKAN',
+          badgeHtml: '<span class="badge badge-warning" style="font-size:0.72rem; font-weight:700; padding:3px 8px; background:rgba(245, 158, 11, 0.15); color:#f59e0b; border:1px solid rgba(245, 158, 11, 0.35); letter-spacing:0.3px;">⚠️ TUNTAS DENGAN PERBAIKAN</span>',
+          isTuntas: true,
+          score,
+          hasAny,
+          hasAll
+        };
+      }
+
+      // 3) BELUM TUNTAS, jika siswa belum menyelesaikan semua atau salah satu jenis penilaian (harian, praktikum, dan ASLM) atau memperoleh nilai akhir setiap topik ≤ 75
+      return {
+        status: 'BELUM TUNTAS',
+        badgeHtml: '<span class="badge badge-danger" style="font-size:0.75rem; font-weight:700; padding:3px 8px; letter-spacing:0.3px;">✕ BELUM TUNTAS</span>',
+        isTuntas: false,
+        score,
+        hasAny,
+        hasAll
+      };
+    }
+
+    function renderStudentTopicCards() {
+      const container = document.getElementById('studentTopicCards');
+      const filtered = allTopics.filter(t => t.semester === currentStudentTopicTab);
+
+      if (!filtered || filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1;" class="empty-state">
+            <div class="empty-icon">📖</div>
+            <div class="empty-title">Belum Ada Materi di Semester ${currentStudentTopicTab}</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(t => {
+        const sumItem = topicSummaries.find(s => s.id === t.id) || {};
+        const ketuntasan = getTopicKetuntasan(sumItem);
+        const score = ketuntasan.score;
+        const statusBadge = ketuntasan.badgeHtml;
+
+        const hasSubScores = ketuntasan.hasAny;
+
+        const subScoresHtml = hasSubScores ? `
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap;">
+            <span>H: <strong style="color: var(--text-secondary);">${sumItem.harian ?? '-'}</strong></span>
+            <span>•</span>
+            <span>P: <strong style="color: var(--text-secondary);">${sumItem.praktikum ?? '-'}</strong></span>
+            <span>•</span>
+            <span>LM: <strong style="color: var(--text-secondary);">${sumItem.aslm ?? '-'}</strong></span>
+          </div>
+        ` : '<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">Belum ada penilaian</div>';
+
+        let scoreColor = 'var(--text-muted)';
+        if (score !== null) {
+          if (ketuntasan.status === 'TUNTAS') scoreColor = 'var(--success)';
+          else if (ketuntasan.status === 'TUNTAS DENGAN PERBAIKAN') scoreColor = '#f59e0b';
+          else scoreColor = 'var(--danger)';
+        }
+
+        return `
+          <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--primary); transition: transform 0.2s, box-shadow 0.2s;">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="badge badge-info" style="font-weight: 700;">${t.id}</span>
+                ${statusBadge}
+              </div>
+              <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">
+                ${UI.escapeHtml(t.judul)}
+              </h4>
+              <p class="text-xs text-muted" style="line-height: 1.4; margin-bottom: 12px;">
+                ${UI.escapeHtml(t.deskripsi || 'Topik kurikulum Biologi Kelas 11.')}
+              </p>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-3" style="padding: 8px 12px; background: var(--bg-hover); border-radius: 8px; border: 1px solid var(--border-color, rgba(255,255,255,0.06));">
+                <div>
+                  <span class="text-xs font-semibold" style="color: var(--text-secondary); display: block;">Nilai Akhir Topik:</span>
+                  ${subScoresHtml}
+                </div>
+                <div style="text-align: right;">
+                  <strong style="font-size: 1.25rem; font-weight: 800; color: ${scoreColor};">
+                    ${score !== null ? score : '-'}
+                  </strong>
+                </div>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.78rem; padding: 5px 8px; justify-content: center;"
+                        onclick="applyTopicFilter('${t.id}')" title="Tampilkan nilai topik ini di dashboard">
+                  🎯 Lihat Dashboard
+                </button>
+                <a href="nilai.html?topik=${encodeURIComponent(t.id)}" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 5px 8px;" title="Rincian Nilai">
+                  📋 Rincian
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function applyTopicFilter(topikId) {
+      document.getElementById('studentTopicFilter').value = topikId;
+      loadDashboardData();
+      // Scroll to summary cards
+      document.getElementById('gradeSummary')?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function onStudentTopicFilterChange() {
+      await loadDashboardData();
+    }
+
+    async function loadDashboardData() {
+      UI.showLoading('Memuat data...');
+      const topikId = document.getElementById('studentTopicFilter').value;
+
+      try {
+        const graphRes = await API.getStudentGraphData(user.nis, user.kelas, topikId !== 'ALL' ? topikId : null);
+        const gd = graphRes.graphData;
+        const fgEl = document.getElementById('finalGradeDisplay');
+        const predikatEl = document.getElementById('predikatDisplay');
+
+        // Check if a specific topic is selected
+        if (topikId && topikId !== 'ALL') {
+          const matched = allTopics.find(t => t.id === topikId);
+          document.getElementById('finalGradeTitle').textContent = `Nilai Akhir Topik: ${matched ? matched.judul : topikId}`;
+
+          const sumItem = topicSummaries.find(s => s.id === topikId) || {};
+          const ketuntasan = getTopicKetuntasan(sumItem);
+          const topicFinalScore = ketuntasan.score;
+
+          // Averages for this topic
+          document.getElementById('avgHarian').textContent = sumItem.harian ?? gd.averages.harian ?? '-';
+          document.getElementById('avgPraktikum').textContent = sumItem.praktikum ?? gd.averages.praktikum ?? '-';
+          document.getElementById('avgASLM').textContent = sumItem.aslm ?? gd.averages.aslm ?? '-';
+          // ASAS is end-of-semester exam, not applicable to individual topic
+          document.getElementById('avgASAS').textContent = '-';
+
+          // Color the stat values
+          ['avgHarian', 'avgPraktikum', 'avgASLM'].forEach(id => {
+            const el = document.getElementById(id);
+            const val = parseFloat(el.textContent);
+            if (!isNaN(val)) {
+              el.style.color = val >= gd.kkm ? 'var(--success)' : 'var(--danger)';
+            } else {
+              el.style.color = 'var(--text-muted)';
+            }
+          });
+          document.getElementById('avgASAS').style.color = 'var(--text-muted)';
+
+          // Final score display: MUST MATCH THE EXACT TOPIC SCORE FROM THE TOPIC CARD BELOW
+          if (topicFinalScore !== null) {
+            fgEl.textContent = topicFinalScore;
+            if (ketuntasan.status === 'TUNTAS') {
+              fgEl.style.color = 'var(--success)';
+            } else if (ketuntasan.status === 'TUNTAS DENGAN PERBAIKAN') {
+              fgEl.style.color = '#f59e0b';
+            } else {
+              fgEl.style.color = 'var(--danger)';
+            }
+
+            let predikat = 'D';
+            if (topicFinalScore >= 90) predikat = 'A';
+            else if (topicFinalScore >= 80) predikat = 'B';
+            else if (topicFinalScore >= 70) predikat = 'C';
+
+            predikatEl.innerHTML = `
+              <div style="display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap; margin-top:4px;">
+                ${UI.predikatBadge(predikat)}
+                ${ketuntasan.badgeHtml}
+              </div>
+            `;
+          } else {
+            fgEl.textContent = '-';
+            fgEl.style.color = 'var(--text-muted)';
+            predikatEl.innerHTML = '';
+          }
+        } else {
+          // ALL topics mode
+          document.getElementById('finalGradeTitle').textContent = 'Nilai Akhir (Semua Topik)';
+
+          // Update averages
+          document.getElementById('avgHarian').textContent = gd.averages.harian ?? '-';
+          document.getElementById('avgPraktikum').textContent = gd.averages.praktikum ?? '-';
+          document.getElementById('avgASLM').textContent = gd.averages.aslm ?? '-';
+          document.getElementById('avgASAS').textContent = gd.averages.asas ?? '-';
+
+          // Color the stat values
+          ['avgHarian', 'avgPraktikum', 'avgASLM', 'avgASAS'].forEach(id => {
+            const el = document.getElementById(id);
+            const val = parseFloat(el.textContent);
+            if (!isNaN(val)) {
+              el.style.color = val >= gd.kkm ? 'var(--success)' : 'var(--danger)';
+            } else {
+              el.style.color = 'var(--text-muted)';
+            }
+          });
+
+          // Overall grade from all topics
+          const validTopicScores = topicSummaries
+            .map(s => getTopicKetuntasan(s).score)
+            .filter(sc => sc !== null && !isNaN(sc));
+
+          let overallGrade = null;
+          if (validTopicScores.length > 0) {
+            overallGrade = Number((validTopicScores.reduce((a, b) => a + b, 0) / validTopicScores.length).toFixed(1));
+          } else {
+            const avgs = gd.averages;
+            const vals = [avgs.harian, avgs.praktikum, avgs.aslm].filter(v => v !== null && !isNaN(v));
+            if (vals.length > 0) {
+              overallGrade = Number((vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1));
+            }
+          }
+
+          if (overallGrade !== null) {
+            fgEl.textContent = overallGrade;
+            fgEl.style.color = overallGrade >= gd.kkm ? 'var(--success)' : 'var(--danger)';
+
+            let predikat = 'D';
+            if (overallGrade >= 90) predikat = 'A';
+            else if (overallGrade >= 80) predikat = 'B';
+            else if (overallGrade >= 70) predikat = 'C';
+            predikatEl.innerHTML = UI.predikatBadge(predikat);
+          } else {
+            fgEl.textContent = '-';
+            fgEl.style.color = 'var(--text-muted)';
+            predikatEl.innerHTML = '';
+          }
+        }
+
+        // Line chart - Harian progress
+        renderHarianChart(gd.harian, gd.kkm);
+
+        // Radar chart - Profile
+        renderRadarChart(gd.averages, gd.kkm);
+
+      } catch (err) {
+        UI.toastError('Error', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function renderHarianChart(harianData, kkm) {
+      const ctx = document.getElementById('harianChart').getContext('2d');
+      if (harianChartInstance) harianChartInstance.destroy();
+      
+      if (!harianData || harianData.length === 0) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = '14px Inter';
+        ctx.fillStyle = '#6b7280';
+        ctx.textAlign = 'center';
+        ctx.fillText('Belum ada data penilaian harian untuk topik ini', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return;
+      }
+
+      harianChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: harianData.map(d => d.label),
+          datasets: [
+            {
+              label: 'Nilai',
+              data: harianData.map(d => d.value),
+              borderColor: 'rgba(16, 185, 129, 1)',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.3,
+              pointBackgroundColor: harianData.map(d => 
+                d.value >= kkm ? 'rgba(16, 185, 129, 1)' : 'rgba(244, 63, 94, 1)'),
+              pointRadius: 5,
+              pointHoverRadius: 7
+            },
+            {
+              label: 'KKM',
+              data: harianData.map(() => kkm),
+              borderColor: 'rgba(244, 63, 94, 0.5)',
+              borderWidth: 1,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              labels: { color: '#9ca3af', usePointStyle: true, font: { size: 11 } }
+            },
+            tooltip: {
+              backgroundColor: '#1f2937',
+              titleColor: '#f9fafb',
+              bodyColor: '#d1d5db',
+              borderColor: '#374151',
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#9ca3af' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#9ca3af' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderRadarChart(averages, kkm) {
+      const ctx = document.getElementById('radarChart').getContext('2d');
+      if (radarChartInstance) radarChartInstance.destroy();
+
+      radarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Harian', 'Praktikum', 'ASLM', 'ASAS'],
+          datasets: [
+            {
+              label: 'Nilai Kamu',
+              data: [
+                averages.harian || 0,
+                averages.praktikum || 0,
+                averages.aslm || 0,
+                averages.asas || 0
+              ],
+              backgroundColor: 'rgba(16, 185, 129, 0.2)',
+              borderColor: 'rgba(16, 185, 129, 0.8)',
+              borderWidth: 2,
+              pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+              pointRadius: 4
+            },
+            {
+              label: 'KKM',
+              data: [kkm, kkm, kkm, kkm],
+              backgroundColor: 'rgba(244, 63, 94, 0.05)',
+              borderColor: 'rgba(244, 63, 94, 0.4)',
+              borderWidth: 1,
+              borderDash: [5, 5],
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              labels: { color: '#9ca3af', usePointStyle: true, font: { size: 11 } }
+            }
+          },
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: 'rgba(255,255,255,0.08)' },
+              angleLines: { color: 'rgba(255,255,255,0.08)' },
+              pointLabels: { color: '#d1d5db', font: { size: 12 } },
+              ticks: { color: '#6b7280', backdropColor: 'transparent' }
+            }
+          }
+        }
+      });
+    }
+
+    // ============================================================
+    // INCOMPLETE ASSESSMENTS ALERT (WARNING BANNER)
+    // ============================================================
+    async function loadIncompleteAssessments() {
+      const alertContainer = document.getElementById('incompleteAssessmentsAlert');
+      if (!alertContainer) return;
+
+      try {
+        let res = null;
+        try {
+          res = await API.getStudentIncompleteAssessments(user.nis, user.kelas);
+        } catch (apiErr) {
+          // Fallback if backend route is not yet deployed: build from student grades
+          try {
+            const gradesRes = await API.getStudentGrades(user.nis, user.kelas);
+            if (gradesRes && gradesRes.grades) {
+              const g = gradesRes.grades;
+              const kkmVal = g.kkm || 75;
+              const fallbackList = [];
+
+              const checkCategory = (arr, catKey, catLabel, catIcon) => {
+                (arr || []).forEach(item => {
+                  const val = item.value;
+                  if (val === null || val === undefined || val === '') {
+                    fallbackList.push({
+                      category: catKey, categoryLabel: catLabel, categoryIcon: catIcon,
+                      item: item.label, topikId: item.topikId, topikJudul: item.topikId || 'Umum',
+                      value: null, reason: 'kosong', statusText: 'Belum Mengikuti Penilaian', kkm: kkmVal
+                    });
+                  } else if (val === 0) {
+                    fallbackList.push({
+                      category: catKey, categoryLabel: catLabel, categoryIcon: catIcon,
+                      item: item.label, topikId: item.topikId, topikJudul: item.topikId || 'Umum',
+                      value: 0, reason: 'nol', statusText: 'Nilai Masih 0', kkm: kkmVal
+                    });
+                  } else if (val < kkmVal) {
+                    fallbackList.push({
+                      category: catKey, categoryLabel: catLabel, categoryIcon: catIcon,
+                      item: item.label, topikId: item.topikId, topikJudul: item.topikId || 'Umum',
+                      value: val, reason: 'kurang', statusText: `Nilai Kurang dari KKM (${val} / KKM ${kkmVal})`, kkm: kkmVal
+                    });
+                  }
+                });
+              };
+
+              checkCategory(g.harian, 'harian', 'Penilaian Harian', '📘');
+              checkCategory(g.praktikum, 'praktikum', 'Penilaian Praktikum', '🔬');
+              checkCategory(g.aslm, 'aslm', 'Asesmen Sumatif LM', '📑');
+              checkCategory(g.asas, 'asas', 'Asesmen Sumatif AS', '📄');
+
+              res = {
+                success: true,
+                kkm: kkmVal,
+                totalEvaluated: (g.harian || []).length + (g.praktikum || []).length + (g.aslm || []).length + (g.asas || []).length,
+                totalIncomplete: fallbackList.length,
+                incompleteList: fallbackList
+              };
+            }
+          } catch (e2) {
+            console.warn('Fallback incomplete check error:', e2);
+          }
+        }
+
+        if (!res || !res.success) return;
+
+        const kkm = res.kkm || 75;
+        const list = res.incompleteList || [];
+        const totalEvaluated = res.totalEvaluated || 0;
+
+        if (list.length > 0) {
+          // Warning state: format WhatsApp message template
+          const waItems = list.map((it, idx) => `${idx + 1}. [${it.categoryLabel}] ${it.item} (${it.statusText})`).join('\n');
+          const waText = encodeURIComponent(
+            `Halo Pak Romzi, saya ${user.nama} dari kelas ${user.kelas} (NIS: ${user.nis}).\n\n` +
+            `Melalui dashboard aplikasi Penilaian Biologi, saya melihat ada ${list.length} penilaian yang belum tuntas / perlu susulan:\n${waItems}\n\n` +
+            `Mohon arahan dan petunjuk dari Bapak untuk menyelesaikan penilaian tersebut. Terima kasih banyak Pak.`
+          );
+          const waUrl = `https://wa.me/6282127539686?text=${waText}`;
+
+          const tableRows = list.map((it, idx) => {
+            let reasonBadge = '';
+            if (it.reason === 'kosong') {
+              reasonBadge = '<span class="badge badge-danger" style="font-weight:600;">🔴 Belum Mengikuti Penilaian</span>';
+            } else if (it.reason === 'nol') {
+              reasonBadge = '<span class="badge badge-danger" style="font-weight:600;">🔴 Nilai Masih 0</span>';
+            } else {
+              reasonBadge = `<span class="badge badge-warning" style="font-weight:600;">🟠 Nilai ${it.value} (Di bawah KKM ${kkm})</span>`;
+            }
+
+            const detailLink = `nilai.html?topik=${encodeURIComponent(it.topikId || 'ALL')}&tab=${encodeURIComponent(it.category || 'harian')}`;
+
+            return `
+              <tr>
+                <td style="text-align: center; color: var(--text-muted); font-weight: 600;">${idx + 1}</td>
+                <td>
+                  <span style="font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                    ${it.categoryIcon || '📝'} ${it.categoryLabel}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge badge-info" style="font-size: 0.72rem; padding: 2px 6px;">
+                    ${it.topikId ? it.topikId : 'Umum'}
+                  </span>
+                  <div style="font-size: 0.8rem; margin-top: 2px; color: var(--text-secondary);">
+                    ${UI.escapeHtml(it.topikJudul || '-')}
+                  </div>
+                </td>
+                <td>
+                  <strong style="color: var(--text);">${UI.escapeHtml(it.item)}</strong>
+                </td>
+                <td>
+                  ${reasonBadge}
+                </td>
+                <td style="text-align: center;">
+                  <a href="${detailLink}" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px; justify-content: center;" title="Lihat detail nilai">
+                    🔍 Detail
+                  </a>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          alertContainer.innerHTML = `
+            <div class="card" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(245, 158, 11, 0.08)); border: 1.5px solid rgba(239, 68, 68, 0.4); box-shadow: 0 4px 20px rgba(239, 68, 68, 0.12);">
+              <div class="card-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 1.7rem;">⚠️</span>
+                  <div>
+                    <h3 style="color: #f87171; font-size: 1.15rem; font-weight: 700; margin: 0;">
+                      Peringatan: Kamu Memiliki ${list.length} Penilaian yang Belum Tuntas!
+                    </h3>
+                    <p class="text-xs text-muted" style="margin: 2px 0 0 0;">
+                      Ditemukan tugas yang nilainya masih 0, belum mengikuti praktikum, atau nilai ujian yang belum mencapai KKM (${kkm}).
+                    </p>
+                  </div>
+                </div>
+                <span class="badge badge-danger" style="font-weight: 700; font-size: 0.8rem; padding: 5px 10px;">
+                  🚨 Perlu Segera Dihubungi
+                </span>
+              </div>
+
+              <div class="card-body" style="padding: 16px 18px;">
+                <!-- Teacher Contact Bar -->
+                <div style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #06b6d4); display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                      👨‍🏫
+                    </div>
+                    <div>
+                      <div class="text-xs text-muted">Guru Mata Pelajaran Biologi:</div>
+                      <strong style="font-size: 0.95rem; color: #f1f5f9;">Muhammad Romzi Rosyadi, S.Pd</strong>
+                      <div class="text-xs text-muted">Kontak: 082127539686</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" 
+                       style="background: #25D366; color: white; border: none; font-weight: 600; font-size: 0.82rem; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);"
+                       title="Kirim pesan WhatsApp otomatis ke guru">
+                      💬 Hubungi Guru via WhatsApp
+                    </a>
+                    <a href="tel:082127539686" class="btn btn-secondary btn-sm" style="font-size: 0.82rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;" title="Telepon Guru">
+                      📞 Telepon
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Table of Incomplete Items -->
+                <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                  <table class="table" style="font-size: 0.85rem; margin: 0;">
+                    <thead>
+                      <tr style="background: rgba(0,0,0,0.25);">
+                        <th style="width: 40px; text-align: center;">No</th>
+                        <th style="min-width: 130px;">Jenis Penilaian</th>
+                        <th style="min-width: 150px;">Topik / Materi</th>
+                        <th style="min-width: 160px;">Nama Penilaian</th>
+                        <th style="min-width: 180px;">Keterangan Masalah</th>
+                        <th style="min-width: 80px; text-align: center;">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${tableRows}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+          alertContainer.style.display = 'block';
+        } else if (totalEvaluated > 0) {
+          // All complete state
+          alertContainer.innerHTML = `
+            <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.08)); border: 1.5px solid rgba(16, 185, 129, 0.35);">
+              <div style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="font-size: 2rem;">🎉</span>
+                  <div>
+                    <h4 style="color: var(--success); margin: 0; font-size: 1.05rem; font-weight: 700;">
+                      Luar Biasa! Semua Penilaian Kamu Telah Tuntas
+                    </h4>
+                    <p class="text-xs text-muted" style="margin: 2px 0 0 0;">
+                      Tidak ada tugas bernilai 0, belum mengikuti praktikum, atau nilai ujian yang di bawah KKM (${kkm}). Pertahankan prestasimu!
+                    </p>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="badge badge-success">✓ Semua Tuntas</span>
+                  <a href="https://wa.me/6282127539686" target="_blank" class="btn btn-ghost btn-sm" style="font-size: 0.78rem; padding: 4px 8px; color: var(--text-secondary);" title="Kontak Guru">
+                    👨‍🏫 Pak Romzi
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+          alertContainer.style.display = 'block';
+        } else {
+          alertContainer.style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Error loading incomplete assessments:', err);
+      }
+    }
+
+    // ============================================================
+    // NOTIFICATIONS SYSTEM (PER-SISWA & STATUS DIBACA)
+    // ============================================================
+    let currentNotifs = [];
+
+    function getReadNotifIds() {
+      try {
+        const raw = localStorage.getItem(`read_notifs_${user.nis}`);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveReadNotifIds(ids) {
+      try {
+        localStorage.setItem(`read_notifs_${user.nis}`, JSON.stringify(ids));
+      } catch (e) { }
+    }
+
+    async function loadNotifications() {
+      try {
+        const res = await API.getNotifications(user.nis, user.kelas);
+        const notifs = res.notifications || [];
+        currentNotifs = notifs;
+
+        const readIds = getReadNotifIds();
+        const unreadNotifs = notifs.filter(n => {
+          const isLocallyRead = readIds.includes(n.id) || (n.notifKey && readIds.includes(n.notifKey));
+          return !n.dibaca && !isLocallyRead;
+        });
+
+        const unreadCount = unreadNotifs.length;
+        const badge = document.getElementById('notifBadge');
+        const headerCount = document.getElementById('notifUnreadCount');
+        const btnMarkAll = document.getElementById('btnMarkAllNotifs');
+
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount;
+          badge.style.display = 'flex';
+          document.getElementById('notifBell').classList.add('has-new');
+
+          if (headerCount) {
+            headerCount.textContent = `${unreadCount} Baru`;
+            headerCount.style.display = 'inline-block';
+          }
+          if (btnMarkAll) btnMarkAll.style.display = 'inline-flex';
+
+          // Browser notification for new incoming ones
+          if (unreadCount > lastNotifCount && lastNotifCount >= 0) {
+            const newNotifs = unreadNotifs.slice(0, unreadCount - lastNotifCount);
+            newNotifs.forEach(n => {
+              UI.sendBrowserNotification('🧬 Penilaian Biologi', n.pesan);
+            });
+          }
+        } else {
+          badge.style.display = 'none';
+          document.getElementById('notifBell').classList.remove('has-new');
+          if (headerCount) headerCount.style.display = 'none';
+          if (btnMarkAll) btnMarkAll.style.display = 'none';
+        }
+        lastNotifCount = unreadCount;
+
+        // Render list
+        renderNotificationList();
+      } catch (e) {
+        console.warn('Silent fail for notifications:', e);
+      }
+    }
+
+    function renderNotificationList() {
+      const list = document.getElementById('notifList');
+      if (!list) return;
+
+      if (!currentNotifs || currentNotifs.length === 0) {
+        list.innerHTML = '<div class="notification-empty">Belum ada pembaruan nilai untukmu</div>';
+        return;
+      }
+
+      const readIds = getReadNotifIds();
+
+      list.innerHTML = currentNotifs.slice(0, 25).map(n => {
+        const isRead = n.dibaca || readIds.includes(n.id) || (n.notifKey && readIds.includes(n.notifKey));
+        return `
+          <div class="notification-item ${isRead ? '' : 'unread'}" 
+               id="notif-item-${n.id}"
+               onclick="markNotifAsRead(${n.id}, '${UI.escapeHtml(n.notifKey || '')}', event)"
+               style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; cursor: pointer; transition: background 0.2s;"
+               title="${isRead ? 'Sudah dibaca' : 'Klik untuk tandai sudah dibaca'}">
+            <div style="flex: 1; min-width: 0;">
+              <div class="notif-text" style="${isRead ? 'opacity: 0.65; font-weight: 400;' : 'font-weight: 600; color: #f1f5f9;'}">
+                ${UI.escapeHtml(n.pesan)}
+              </div>
+              <div class="notif-time" style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+                <span>${UI.timeAgo(n.tanggal)}</span>
+                ${isRead ? '<span style="color: var(--text-muted); font-size: 0.68rem;">• Sudah dibaca</span>' : '<span style="color: var(--primary-400, #34d399); font-size: 0.68rem; font-weight: 600;">• Baru</span>'}
+              </div>
+            </div>
+            ${!isRead ? `
+              <button type="button" class="btn btn-ghost btn-sm" 
+                      onclick="event.stopPropagation(); markNotifAsRead(${n.id}, '${UI.escapeHtml(n.notifKey || '')}', event)" 
+                      title="Tandai sudah dibaca"
+                      style="padding: 2px 7px; font-size: 0.75rem; border-radius: 4px; color: var(--primary-400); flex-shrink: 0; border: 1px solid rgba(16,185,129,0.3);">
+                ✓
+              </button>
+            ` : `
+              <span style="font-size: 0.75rem; color: var(--text-muted); padding: 2px 4px;">✓</span>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function markNotifAsRead(notifId, notifKey, event) {
+      if (event) event.stopPropagation();
+
+      const readIds = getReadNotifIds();
+      let changed = false;
+
+      if (!readIds.includes(notifId)) {
+        readIds.push(notifId);
+        changed = true;
+      }
+      if (notifKey && !readIds.includes(notifKey)) {
+        readIds.push(notifKey);
+        changed = true;
+      }
+
+      if (changed) {
+        saveReadNotifIds(readIds);
+
+        // Update badge counter instantly
+        const unreadCount = currentNotifs.filter(n => {
+          const isLocallyRead = readIds.includes(n.id) || (n.notifKey && readIds.includes(n.notifKey));
+          return !n.dibaca && !isLocallyRead;
+        }).length;
+
+        const badge = document.getElementById('notifBadge');
+        const headerCount = document.getElementById('notifUnreadCount');
+        const btnMarkAll = document.getElementById('btnMarkAllNotifs');
+
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount;
+          badge.style.display = 'flex';
+          if (headerCount) {
+            headerCount.textContent = `${unreadCount} Baru`;
+            headerCount.style.display = 'inline-block';
+          }
+          if (btnMarkAll) btnMarkAll.style.display = 'inline-flex';
+        } else {
+          badge.style.display = 'none';
+          document.getElementById('notifBell').classList.remove('has-new');
+          if (headerCount) headerCount.style.display = 'none';
+          if (btnMarkAll) btnMarkAll.style.display = 'none';
+        }
+        lastNotifCount = unreadCount;
+
+        // Re-render list with updated styles
+        renderNotificationList();
+
+        // Sync with backend asynchronously
+        try {
+          API.markNotificationRead(notifId, user.nis);
+        } catch (err) {
+          console.warn('Sync mark read to server failed:', err);
+        }
+      }
+    }
+
+    async function markAllNotifsAsRead(event) {
+      if (event) event.stopPropagation();
+
+      const readIds = getReadNotifIds();
+      currentNotifs.forEach(n => {
+        if (!readIds.includes(n.id)) readIds.push(n.id);
+        if (n.notifKey && !readIds.includes(n.notifKey)) readIds.push(n.notifKey);
+      });
+      saveReadNotifIds(readIds);
+
+      // Instantly clear badges
+      const badge = document.getElementById('notifBadge');
+      const headerCount = document.getElementById('notifUnreadCount');
+      const btnMarkAll = document.getElementById('btnMarkAllNotifs');
+
+      badge.style.display = 'none';
+      document.getElementById('notifBell').classList.remove('has-new');
+      if (headerCount) headerCount.style.display = 'none';
+      if (btnMarkAll) btnMarkAll.style.display = 'none';
+      lastNotifCount = 0;
+
+      // Re-render list
+      renderNotificationList();
+
+      UI.toastSuccess('Notifikasi', 'Semua notifikasi ditandai sudah dibaca');
+
+      // Sync with backend asynchronously
+      try {
+        API.markAllNotificationsRead(user.nis);
+      } catch (err) {
+        console.warn('Sync mark all read to server failed:', err);
+      }
+    }
+
+    function toggleNotifications() {
+      // Safely request permission only on direct user interaction
+      UI.requestNotificationPermission();
+
+      const dropdown = document.getElementById('notifDropdown');
+      dropdown.classList.toggle('active');
+
+      // Close on outside click
+      if (dropdown.classList.contains('active')) {
+        document.addEventListener('click', closeNotifOnOutside);
+      }
+    }
+
+    function closeNotifOnOutside(e) {
+      const bell = document.getElementById('notifBell');
+      if (!bell.contains(e.target)) {
+        document.getElementById('notifDropdown').classList.remove('active');
+        document.removeEventListener('click', closeNotifOnOutside);
+      }
+    }
+
+    // Cleanup
+    window.addEventListener('beforeunload', () => {
+      UI.stopPolling();
+    });
+  </script>
+</body>
+</html>

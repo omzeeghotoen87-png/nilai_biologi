@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Input Nilai - Penilaian Biologi</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" type="image/png" href="../images/icon-192.png">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nilai Biologi">
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+</head>
+<body>
+  <div class="app-layout">
+    <button class="sidebar-toggle" aria-label="Menu">☰</button>
+    <div class="sidebar-overlay"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <img src="../images/logo.png" alt="Logo SMA Negeri 2 Ciamis" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkivZZWq710R9bcyNcRC5qdeCUQ-JhiFTtUJ5vYfSG-nGZqXLM-mfZFDnoxuENZ3LWV1Tk9NGomIpD1XygvXTJMbczibyejOxEx6-_Y9rVB_Cr91KdTQuk1UjXwNugQPx-o9ei7t3BxC-f40yuK-bmp47VkKHaoOhOzqESITzCQV50QIxNc32bv65Qom9q/s320/download.png'">
+          </div>
+          <div>
+            <div class="brand-text">Penilaian Biologi</div>
+            <div class="brand-sub">SMA Negeri 2 Ciamis</div>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Menu Utama</div>
+          <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+          <a href="input-nilai.html" class="nav-item active"><span class="nav-icon">📝</span> Input Nilai</a>
+          <a href="manage-siswa.html" class="nav-item"><span class="nav-icon">👥</span> Data Siswa</a>
+          <a href="rekap.html" class="nav-item"><span class="nav-icon">📋</span> Rekap Nilai</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Pengaturan</div>
+          <a href="pengaturan.html" class="nav-item"><span class="nav-icon">⚙️</span> Pengaturan</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">
+            <img src="../images/guru.png" alt="Foto Guru" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjhpg2qFZEUpqZXmvHPlKO0KNTcnF4RIEQSXTC33imZvn1rcRXGAGx-djkgIhouQtoFHUdGUzu8EKMh8wrWJUrkH95W3W8mw3w03DJe4p8WVsmYXf8jys8j4_xxf5aVL3sWgbVxiEv4ICnLQWDLt55rvn-icJYpV5a3nOCn1L46CI6WSvItOFdjfnQVfZSN/s320/OmzeeGhotoen_24.png'">
+          </div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Guru</div>
+            <div class="user-role">Guru Biologi</div>
+          </div>
+        </div>
+        <button class="sidebar-logout" onclick="API.logout()"><span>🚪</span> Keluar</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <div>
+            <h1 class="page-title">📝 Input Nilai</h1>
+            <p class="page-subtitle">Input dan edit nilai siswa</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Filters -->
+        <div class="action-bar">
+          <div class="action-bar-left filter-bar" style="flex-wrap: wrap; gap: 8px;">
+            <select class="form-select" id="filterKelas" onchange="loadGrades()">
+              <option value="">Pilih Kelas</option>
+              <option value="11 F1">11 F1</option>
+              <option value="11 F2">11 F2</option>
+              <option value="11 F3">11 F3</option>
+              <option value="11 F4">11 F4</option>
+              <option value="11 F5">11 F5</option>
+            </select>
+            <select class="form-select" id="filterSemester" onchange="onSemesterChange()">
+              <option value="Ganjil">Semester Ganjil</option>
+              <option value="Genap">Semester Genap</option>
+              <option value="ALL">Semua Semester</option>
+            </select>
+            <select class="form-select" id="filterTopik" onchange="loadGrades()" style="min-width: 200px;">
+              <option value="ALL">Semua Topik / Materi</option>
+            </select>
+            <select class="form-select" id="filterJenis" onchange="loadGrades()">
+              <option value="">Pilih Jenis Penilaian</option>
+              <option value="harian">📘 Penilaian Harian / Tugas</option>
+              <option value="praktikum">🔬 Penilaian Praktikum</option>
+              <option value="aslm">📑 Asesmen Sumatif Lingkup Materi</option>
+              <option value="asas">📄 Asesmen Sumatif Akhir Semester (ASAS / ASAT)</option>
+            </select>
+          </div>
+          <div class="action-bar-right" style="flex-wrap: wrap; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" id="btnManageTopics" onclick="showManageTopicsModal()">
+              ⚙️ Kelola Topik
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnAddColumn" onclick="showAddColumnModal()" style="display:none;">
+              ➕ Tambah Kolom
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnManageColumns" onclick="showManageColumnsModal()" style="display:none;" title="Edit nama kolom dan kelola kolom penilaian">
+              ✏️ Kelola Kolom
+            </button>
+            <button class="btn btn-primary btn-sm" id="btnSave" onclick="saveAllGrades(false)" style="display:none;">
+              💾 Simpan
+            </button>
+            <button class="btn btn-primary btn-sm" id="btnSaveNotify" onclick="saveAllGrades(true)" style="display:none;" 
+                    title="Simpan nilai dan kirim notifikasi ke siswa">
+              🔔 Simpan & Notifikasi
+            </button>
+          </div>
+        </div>
+
+        <!-- Grade Table -->
+        <div class="card" id="gradeCard" style="display: none;">
+          <div class="card-header">
+            <h4 class="card-title" id="gradeTitle">Nilai</h4>
+            <div class="flex gap-2 items-center">
+              <span class="badge badge-info" id="gradeInfo"></span>
+              <span class="badge badge-warning" id="unsavedBadge" style="display: none;">● Belum disimpan</span>
+            </div>
+          </div>
+
+          <!-- Table Scroll Toolbar with Navigation Buttons & Info -->
+          <div class="table-scroll-toolbar" id="gradeScrollToolbar">
+            <div class="scroll-hint-text">
+              <span>↔️ Geser tabel untuk melihat semua kolom penilaian</span>
+              <span class="scroll-status-badge" id="scrollColCount"></span>
+            </div>
+            <div class="table-scroll-actions">
+              <button type="button" class="btn-scroll" onclick="UI.scrollToLeft('gradeTableContainer')" title="Geser ke Nama Siswa (Kolom Pertama)">
+                ⇤ Awal
+              </button>
+              <button type="button" class="btn-scroll" onclick="UI.scrollTable('gradeTableContainer', -260)" title="Geser ke Kiri">
+                ◀ Kiri
+              </button>
+              <button type="button" class="btn-scroll" onclick="UI.scrollTable('gradeTableContainer', 260)" title="Geser ke Kanan">
+                Kanan ▶
+              </button>
+              <button type="button" class="btn-scroll" onclick="UI.scrollToRight('gradeTableContainer')" title="Geser ke Kolom Akhir (Rata-rata & Komentar)">
+                Akhir ⇥
+              </button>
+            </div>
+          </div>
+
+          <div class="table-scroll-wrapper" id="tableScrollWrapper">
+            <button type="button" class="scroll-edge-btn scroll-edge-left" onclick="UI.scrollTable('gradeTableContainer', -260)" title="Geser ke Kiri">‹</button>
+            <div class="table-container" id="gradeTableContainer">
+              <table class="table grade-table sticky-student-cols" id="gradeTable">
+                <thead id="gradeTableHead"></thead>
+                <tbody id="gradeTableBody"></tbody>
+              </table>
+            </div>
+            <button type="button" class="scroll-edge-btn scroll-edge-right" onclick="UI.scrollTable('gradeTableContainer', 260)" title="Geser ke Kanan">›</button>
+          </div>
+          <div class="card-footer flex justify-between items-center" id="gradeFooter" style="display:none;">
+            <div class="text-sm text-muted">
+              KKM: <strong id="kkmDisplay">75</strong> | 
+              Warna <span style="color: var(--success)">■</span> = di atas KKM, 
+              <span style="color: var(--danger)">■</span> = di bawah KKM
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-secondary btn-sm" onclick="loadGrades()">🔄 Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="card" id="emptyState">
+          <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <div class="empty-title">Pilih Kelas dan Jenis Penilaian</div>
+            <div class="empty-text">Pilih kelas dan jenis penilaian di atas untuk mulai menginput nilai.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js"></script>
+  <script>
+    let currentGrades = [];
+    let currentHeaders = [];
+    let currentColumnDetails = [];
+    let allTopics = [];
+    let pendingChanges = {};
+    let kkm = 75;
+
+    const JENIS_LABELS = {
+      harian: 'Penilaian Harian / Tugas',
+      praktikum: 'Penilaian Praktikum',
+      aslm: 'Asesmen Sumatif Lingkup Materi',
+      asas: 'Asesmen Sumatif Akhir Semester'
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.requireAuth('guru')) return;
+      UI.initSidebar();
+      const user = API.getUser();
+      document.getElementById('userName').textContent = user.name || 'Guru';
+      UI.renderAvatar(document.getElementById('userAvatar'), user);
+
+      // Load settings for KKM
+      try {
+        const settings = await API.getSettings();
+        kkm = settings.settings?.kkm || 75;
+        document.getElementById('kkmDisplay').textContent = kkm;
+      } catch (e) {}
+
+      // Load Topics
+      await loadTopics();
+
+      // Check URL params
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('semester')) {
+        document.getElementById('filterSemester').value = params.get('semester');
+        renderTopicOptions();
+      }
+      if (params.get('topik')) {
+        const tId = params.get('topik');
+        const matched = allTopics.find(t => t.id === tId);
+        if (matched) {
+          document.getElementById('filterSemester').value = matched.semester;
+          renderTopicOptions();
+          document.getElementById('filterTopik').value = tId;
+        }
+      }
+      if (params.get('kelas')) {
+        document.getElementById('filterKelas').value = params.get('kelas');
+      }
+      if (params.get('jenis')) {
+        document.getElementById('filterJenis').value = params.get('jenis');
+      }
+      updateJenisAsasLabel();
+
+      if (document.getElementById('filterKelas').value && document.getElementById('filterJenis').value) {
+        loadGrades();
+      }
+    });
+
+    async function loadTopics() {
+      try {
+        const res = await API.getTopics();
+        allTopics = res.topics || [];
+        renderTopicOptions();
+      } catch (e) {
+        console.error('Gagal memuat topik:', e);
+      }
+    }
+
+    function renderTopicOptions() {
+      const sem = document.getElementById('filterSemester').value;
+      const select = document.getElementById('filterTopik');
+      const currentVal = select.value;
+      
+      let filtered = allTopics;
+      if (sem && sem !== 'ALL') {
+        filtered = allTopics.filter(t => t.semester === sem);
+      }
+
+      let html = '<option value="ALL">Semua Topik / Materi</option>';
+      filtered.forEach(t => {
+        html += `<option value="${t.id}">${t.id}: ${UI.escapeHtml(t.judul)} (${t.semester})</option>`;
+      });
+      select.innerHTML = html;
+
+      // Restore value if still in options
+      if (filtered.some(t => t.id === currentVal)) {
+        select.value = currentVal;
+      } else {
+        select.value = 'ALL';
+      }
+    }
+
+    function updateJenisAsasLabel() {
+      const sem = document.getElementById('filterSemester').value;
+      const opt = document.querySelector('#filterJenis option[value="asas"]');
+      if (sem === 'Genap') {
+        JENIS_LABELS.asas = 'Asesmen Sumatif Akhir Tahun (ASAT)';
+        if (opt) opt.textContent = '📄 Asesmen Sumatif Akhir Tahun (ASAT)';
+      } else if (sem === 'Ganjil') {
+        JENIS_LABELS.asas = 'Asesmen Sumatif Akhir Semester (ASAS)';
+        if (opt) opt.textContent = '📄 Asesmen Sumatif Akhir Semester (ASAS)';
+      } else {
+        JENIS_LABELS.asas = 'Asesmen Sumatif Akhir Semester / Tahun (ASAS / ASAT)';
+        if (opt) opt.textContent = '📄 Asesmen Sumatif Akhir Semester / Tahun (ASAS / ASAT)';
+      }
+    }
+
+    function onSemesterChange() {
+      updateJenisAsasLabel();
+      renderTopicOptions();
+      loadGrades();
+    }
+
+    async function loadGrades() {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+      const topikId = document.getElementById('filterTopik').value;
+
+      if (!kelas || !jenis) {
+        document.getElementById('gradeCard').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'block';
+        toggleButtons(false);
+        return;
+      }
+
+      UI.showLoading('Memuat data nilai...');
+      pendingChanges = {};
+      document.getElementById('unsavedBadge').style.display = 'none';
+
+      try {
+        const res = await API.getGrades(jenis, kelas, topikId);
+        currentGrades = res.grades || [];
+        currentHeaders = res.headers || [];
+        currentColumnDetails = res.columnDetails || [];
+
+        let title = `${JENIS_LABELS[jenis]} — Kelas ${kelas}`;
+        if (topikId && topikId !== 'ALL') {
+          const matched = allTopics.find(t => t.id === topikId);
+          if (matched) title += ` [${matched.judul}]`;
+        }
+
+        document.getElementById('gradeTitle').textContent = title;
+        document.getElementById('gradeInfo').textContent = `${currentGrades.length} siswa`;
+
+        document.getElementById('gradeCard').style.display = 'block';
+        document.getElementById('gradeFooter').style.display = 'flex';
+        document.getElementById('emptyState').style.display = 'none';
+        toggleButtons(true);
+
+        renderGradeTable();
+
+      } catch (err) {
+        UI.toastError('Error', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function renderGradeTable() {
+      const thead = document.getElementById('gradeTableHead');
+      const tbody = document.getElementById('gradeTableBody');
+
+      // Update badge column count
+      const colBadge = document.getElementById('scrollColCount');
+      if (colBadge) {
+        colBadge.textContent = `${currentHeaders.length} Kolom Penilaian`;
+      }
+
+      // Header
+      let headerHtml = '<tr>' +
+        '<th class="col-sticky-no" style="min-width:50px; text-align:center;">No</th>' +
+        '<th class="col-sticky-nis" style="min-width:90px;">NIS</th>' +
+        '<th class="col-sticky-nama" style="min-width:180px;">Nama</th>';
+
+      currentHeaders.forEach((h, colIdx) => {
+        const detail = currentColumnDetails[colIdx] || { name: h, raw: h };
+        headerHtml += `<th class="col-penilaian" style="min-width:125px; text-align:center;">
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:4px;">
+              <span style="font-weight:600;">${UI.escapeHtml(h)}</span>
+              <button class="btn btn-ghost btn-sm" style="padding:2px 4px; font-size:0.75rem;" 
+                      onclick="showEditColumnModal('${UI.escapeHtml(h)}', '${UI.escapeHtml(detail.topikId || '')}')" 
+                      title="Edit nama/topik kolom ${UI.escapeHtml(h)}">✏️</button>
+              <button class="btn btn-ghost btn-sm" style="padding:2px 4px; font-size:0.7rem;" 
+                      onclick="deleteColumn('${UI.escapeHtml(h)}', '${UI.escapeHtml(detail.topikId || '')}')" 
+                      title="Hapus kolom ${UI.escapeHtml(h)}">🗑</button>
+            </div>
+            ${detail.topikId ? `<span style="font-size:0.68rem; padding:1px 5px; border-radius:4px; background:var(--primary-light, #ecfdf5); color:var(--primary, #059669); font-weight:600;">${detail.topikId}</span>` : ''}
+          </div>
+        </th>`;
+      });
+      headerHtml += '<th class="col-avg" style="min-width:95px; text-align:center;">Rata-rata</th>';
+      headerHtml += '<th class="col-comment" style="min-width:95px; text-align:center;">Komentar</th></tr>';
+      thead.innerHTML = headerHtml;
+
+      // Body
+      tbody.innerHTML = currentGrades.map((g, idx) => {
+        let row = `<tr>
+          <td class="col-sticky-no" style="text-align:center;">${idx + 1}</td>
+          <td class="col-sticky-nis"><span class="text-muted">${g.NIS}</span></td>
+          <td class="col-sticky-nama"><strong>${UI.escapeHtml(g.Nama || '')}</strong></td>`;
+        
+        let values = [];
+        currentHeaders.forEach(h => {
+          const val = g[h] !== undefined && g[h] !== '' && g[h] !== null ? g[h] : '';
+          if (val !== '' && !isNaN(val)) values.push(Number(val));
+          const colorClass = val !== '' ? UI.gradeClass(val, kkm) : '';
+          row += `<td class="col-penilaian editable" style="text-align:center;">
+            <input type="number" class="grade-input ${colorClass}" 
+                   value="${val}" min="0" max="100" step="1"
+                   data-nis="${g.NIS}" data-col="${h}"
+                   onchange="onGradeChange(this)"
+                   onfocus="this.select()">
+          </td>`;
+        });
+
+        // Average
+        const avg = values.length > 0 
+          ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1) 
+          : '-';
+        const avgClass = avg !== '-' ? UI.gradeClass(Number(avg), kkm) : '';
+        row += `<td class="col-avg grade-cell ${avgClass}" style="text-align:center; font-weight:700;">${avg}</td>`;
+
+        // Comment button
+        row += `<td class="col-comment" style="text-align:center;">
+          <button class="btn btn-ghost btn-sm" onclick="showCommentModal('${g.NIS}', '${UI.escapeHtml(g.Nama || '')}')" title="Tambah komentar">
+            💬
+          </button>
+        </td>`;
+
+        row += '</tr>';
+        return row;
+      }).join('');
+
+      if (currentGrades.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${3 + currentHeaders.length + 2}" class="text-center text-muted" style="padding: var(--space-8);">
+          Belum ada data siswa di kelas ini. <a href="manage-siswa.html">Tambah siswa</a> terlebih dahulu.
+        </td></tr>`;
+      }
+
+      // Initialize / update table scroll handler
+      UI.initTableScroll('gradeTableContainer');
+    }
+
+    function onGradeChange(input) {
+      const nis = input.dataset.nis;
+      const col = input.dataset.col;
+      const val = input.value;
+
+      // Color indicator
+      input.className = 'grade-input ' + (val !== '' ? UI.gradeClass(val, kkm) : '');
+
+      // Track changes
+      const key = `${nis}-${col}`;
+      pendingChanges[key] = { nis, column: col, value: val };
+
+      document.getElementById('unsavedBadge').style.display = 'inline-flex';
+
+      // Update average for this row
+      updateRowAverage(input.closest('tr'));
+    }
+
+    function updateRowAverage(row) {
+      const inputs = row.querySelectorAll('.grade-input');
+      const values = [];
+      inputs.forEach(inp => {
+        if (inp.value !== '' && !isNaN(inp.value)) {
+          values.push(Number(inp.value));
+        }
+      });
+
+      const avgCell = row.querySelector('.grade-cell');
+      if (avgCell) {
+        const avg = values.length > 0 
+          ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1) 
+          : '-';
+        avgCell.textContent = avg;
+        avgCell.className = 'grade-cell ' + (avg !== '-' ? UI.gradeClass(Number(avg), kkm) : '');
+      }
+    }
+
+    async function saveAllGrades(notify) {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+      const topikId = document.getElementById('filterTopik').value;
+
+      if (Object.keys(pendingChanges).length === 0) {
+        UI.toastInfo('Info', 'Tidak ada perubahan untuk disimpan');
+        return;
+      }
+
+      const grades = Object.values(pendingChanges);
+
+      UI.showLoading('Menyimpan nilai...');
+      try {
+        const res = await API.saveGrades(jenis, kelas, grades, notify, topikId);
+        UI.toastSuccess('Berhasil', res.message);
+        pendingChanges = {};
+        document.getElementById('unsavedBadge').style.display = 'none';
+
+        if (notify) {
+          UI.toastInfo('Notifikasi', 'Notifikasi telah dikirim ke siswa');
+        }
+      } catch (err) {
+        UI.toastError('Gagal Menyimpan', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function toggleButtons(show) {
+      ['btnAddColumn', 'btnManageColumns', 'btnSave', 'btnSaveNotify'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = show ? 'inline-flex' : 'none';
+      });
+    }
+
+    // Add Column Modal with Topic Selection
+    function showAddColumnModal() {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+      const jenisLabel = JENIS_LABELS[jenis] || 'Penilaian';
+      const activeTopic = document.getElementById('filterTopik').value;
+
+      let topicOptions = '<option value="">Umum / Tanpa Tag Khusus</option>';
+      allTopics.forEach(t => {
+        const selected = (activeTopic !== 'ALL' && activeTopic === t.id) ? 'selected' : '';
+        topicOptions += `<option value="${t.id}" ${selected}>${t.id}: ${UI.escapeHtml(t.judul)} (${t.semester})</option>`;
+      });
+
+      const content = `
+        <div class="form-group">
+          <label class="form-label">Nama Kolom Baru <span class="text-danger">*</span></label>
+          <input type="text" class="form-input" id="newColumnName" 
+                 placeholder="Contoh: Tugas 1, Praktikum 2, UH 3, dll">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kaitkan ke Topik / Materi</label>
+          <select class="form-select" id="newColumnTopic">
+            ${topicOptions}
+          </select>
+          <div class="form-hint">Kolom ini akan terasosiasi dengan topik materi yang dipilih sehingga rekap nilai per materi menjadi akurat.</div>
+        </div>
+        <div class="form-hint" style="margin-top: 8px;">
+          Kolom akan ditambahkan ke <strong>${jenisLabel}</strong> khusus kelas <strong>${kelas}</strong>.
+        </div>
+      `;
+      const footer = `
+        <div class="flex gap-3" style="justify-content: flex-end;">
+          <button class="btn btn-secondary" onclick="UI.hideModal('addColumnModal')">Batal</button>
+          <button class="btn btn-primary" onclick="addColumn()">➕ Tambah Kolom</button>
+        </div>
+      `;
+
+      UI.createModal('addColumnModal', `➕ Tambah Kolom Penilaian (${kelas})`, content, footer);
+      UI.showModal('addColumnModal');
+      setTimeout(() => document.getElementById('newColumnName')?.focus(), 300);
+    }
+
+    async function addColumn() {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+      const name = document.getElementById('newColumnName').value.trim();
+      const topikId = document.getElementById('newColumnTopic').value || null;
+
+      if (!name) {
+        UI.toastError('Error', 'Nama kolom harus diisi');
+        return;
+      }
+
+      UI.hideModal('addColumnModal');
+      UI.showLoading('Menambah kolom...');
+
+      try {
+        await API.addGradeColumn(jenis, name, kelas, topikId);
+        UI.toastSuccess('Berhasil', `Kolom "${name}" berhasil ditambahkan untuk kelas ${kelas}`);
+        await loadGrades();
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    // Edit Column Modal
+    function showEditColumnModal(currentName, currentTopikId) {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+      const jenisLabel = JENIS_LABELS[jenis] || 'Penilaian';
+
+      let topicOptions = '<option value="">Umum / Tanpa Tag Khusus</option>';
+      allTopics.forEach(t => {
+        const selected = (currentTopikId && currentTopikId === t.id) ? 'selected' : '';
+        topicOptions += `<option value="${t.id}" ${selected}>${t.id}: ${UI.escapeHtml(t.judul)} (${t.semester})</option>`;
+      });
+
+      const content = `
+        <div class="form-group">
+          <label class="form-label">Nama Kolom <span class="text-danger">*</span></label>
+          <input type="text" class="form-input" id="editColumnName" 
+                 value="${UI.escapeHtml(currentName)}" 
+                 placeholder="Contoh: Tugas 1, Praktikum 2, UH 3, dll">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kaitkan ke Topik / Materi</label>
+          <select class="form-select" id="editColumnTopic">
+            ${topicOptions}
+          </select>
+          <div class="form-hint">Ubah kaitan materi jika kolom ini ingin diasosiasikan dengan topik lain.</div>
+        </div>
+        <div class="alert alert-info" style="margin-top: 12px; font-size: 0.85rem; padding: 10px 12px;">
+          ℹ️ Mengubah nama kolom pada <strong>${jenisLabel}</strong> kelas <strong>${kelas}</strong> tidak akan menghapus nilai siswa yang telah diinput sebelumnya.
+        </div>
+      `;
+      const footer = `
+        <div class="flex gap-3" style="justify-content: flex-end;">
+          <button class="btn btn-secondary" onclick="UI.hideModal('editColumnModal')">Batal</button>
+          <button class="btn btn-primary" onclick="submitEditColumn('${UI.escapeHtml(currentName)}', '${UI.escapeHtml(currentTopikId || '')}')">💾 Simpan Perubahan</button>
+        </div>
+      `;
+
+      UI.createModal('editColumnModal', `✏️ Edit Nama Kolom (${kelas})`, content, footer);
+      UI.showModal('editColumnModal');
+      setTimeout(() => {
+        const input = document.getElementById('editColumnName');
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }, 300);
+    }
+
+    async function submitEditColumn(oldName, oldTopikId) {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+      const newName = document.getElementById('editColumnName').value.trim();
+      const newTopikId = document.getElementById('editColumnTopic').value || null;
+
+      if (!newName) {
+        UI.toastError('Error', 'Nama kolom tidak boleh kosong');
+        return;
+      }
+
+      if (newName === oldName && (newTopikId || '') === (oldTopikId || '')) {
+        UI.toastInfo('Info', 'Tidak ada perubahan pada nama atau topik kolom');
+        UI.hideModal('editColumnModal');
+        return;
+      }
+
+      UI.hideModal('editColumnModal');
+      UI.showLoading('Menyimpan nama kolom...');
+
+      try {
+        const res = await API.updateGradeColumn(jenis, oldName, newName, kelas, oldTopikId || null, newTopikId);
+        UI.toastSuccess('Berhasil', res.message || `Kolom berhasil diubah menjadi "${newName}"`);
+        await loadGrades();
+      } catch (err) {
+        UI.toastError('Gagal Mengubah Kolom', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    // Manage Columns Modal (Comprehensive overview of columns for this class)
+    function showManageColumnsModal() {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+      const jenisLabel = JENIS_LABELS[jenis] || 'Penilaian';
+
+      let rowsHtml = '';
+      if (!currentHeaders || currentHeaders.length === 0) {
+        rowsHtml = '<tr><td colspan="4" class="text-center text-muted" style="padding:16px;">Belum ada kolom penilaian pada kelas ini.</td></tr>';
+      } else {
+        rowsHtml = currentHeaders.map((h, idx) => {
+          const detail = currentColumnDetails[idx] || { name: h, raw: h };
+          let topicBadge = '<span class="badge badge-secondary" style="font-size:0.75rem;">Umum</span>';
+          if (detail.topikId) {
+            const matchedT = allTopics.find(t => t.id === detail.topikId);
+            const label = matchedT ? `${detail.topikId}: ${UI.escapeHtml(matchedT.judul)}` : detail.topikId;
+            topicBadge = `<span class="badge badge-primary" style="font-size:0.75rem;">${label}</span>`;
+          }
+
+          return `
+            <tr>
+              <td style="text-align:center; width:40px;">${idx + 1}</td>
+              <td><strong>${UI.escapeHtml(h)}</strong></td>
+              <td>${topicBadge}</td>
+              <td style="text-align:center; width:130px;">
+                <div class="flex gap-1 justify-center">
+                  <button class="btn btn-secondary btn-sm" style="padding:3px 8px; font-size:0.75rem;" 
+                          onclick="UI.hideModal('manageColumnsModal'); showEditColumnModal('${UI.escapeHtml(h)}', '${UI.escapeHtml(detail.topikId || '')}')" 
+                          title="Edit nama dan topik kolom">
+                    ✏️ Edit
+                  </button>
+                  <button class="btn btn-danger btn-sm" style="padding:3px 8px; font-size:0.75rem;" 
+                          onclick="UI.hideModal('manageColumnsModal'); deleteColumn('${UI.escapeHtml(h)}', '${UI.escapeHtml(detail.topikId || '')}')" 
+                          title="Hapus kolom">
+                    🗑
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const content = `
+        <div style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
+          <p class="text-sm text-muted" style="margin:0;">
+            Daftar kolom pada <strong>${jenisLabel}</strong> kelas <strong>${kelas}</strong>:
+          </p>
+          <button class="btn btn-primary btn-sm" onclick="UI.hideModal('manageColumnsModal'); showAddColumnModal()">
+            ➕ Tambah Kolom
+          </button>
+        </div>
+        <div style="max-height: 320px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <table class="table" style="font-size: 0.85rem; margin: 0;">
+            <thead>
+              <tr>
+                <th style="width:40px; text-align:center;">No</th>
+                <th>Nama Kolom</th>
+                <th>Kaitan Topik / Materi</th>
+                <th style="width:130px; text-align:center;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+        <div class="form-hint" style="margin-top: 10px;">
+          💡 Klik <strong>✏️ Edit</strong> untuk mengubah nama kolom atau memindahkan keterkaitan materi. Nilai siswa tidak akan hilang.
+        </div>
+      `;
+
+      const footer = `
+        <div class="flex justify-between items-center" style="width: 100%;">
+          <span class="text-xs text-muted">Total: ${currentHeaders.length} kolom</span>
+          <button class="btn btn-secondary" onclick="UI.hideModal('manageColumnsModal')">Tutup</button>
+        </div>
+      `;
+
+      UI.createModal('manageColumnsModal', `📋 Kelola & Edit Kolom Penilaian (${kelas})`, content, footer);
+      UI.showModal('manageColumnsModal');
+    }
+
+    function deleteColumn(colName, colTopikId = null) {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+      const activeTopic = document.getElementById('filterTopik').value;
+      const topikId = colTopikId || (activeTopic !== 'ALL' ? activeTopic : null);
+
+      UI.confirm(
+        '🗑 Hapus Kolom',
+        `Yakin ingin menghapus kolom "${colName}" untuk kelas ${kelas}? Semua data nilai di kolom ini pada kelas ${kelas} akan hilang.`,
+        async () => {
+          UI.showLoading('Menghapus kolom...');
+          try {
+            await API.deleteGradeColumn(jenis, colName, kelas, topikId);
+            UI.toastSuccess('Berhasil', `Kolom "${colName}" berhasil dihapus untuk kelas ${kelas}`);
+            await loadGrades();
+          } catch (err) {
+            UI.toastError('Gagal', err.message);
+          } finally {
+            UI.hideLoading();
+          }
+        }
+      );
+    }
+
+    // Manage Topics Modal
+    function showManageTopicsModal() {
+      renderManageTopicsContent();
+      UI.showModal('manageTopicsModal');
+    }
+
+    function renderManageTopicsContent() {
+      const ganjilTopics = allTopics.filter(t => t.semester === 'Ganjil');
+      const genapTopics = allTopics.filter(t => t.semester === 'Genap');
+
+      const renderTable = (list) => {
+        if (!list || list.length === 0) {
+          return '<p class="text-sm text-muted" style="padding: 12px 0;">Belum ada topik di semester ini.</p>';
+        }
+        return `
+          <div style="max-height: 220px; overflow-y: auto; margin-bottom: 12px;">
+            <table class="table" style="font-size: 0.85rem;">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">ID</th>
+                  <th>Judul Topik / Materi</th>
+                  <th style="width: 80px; text-align: center;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${list.map(t => `
+                  <tr>
+                    <td><span class="badge badge-info">${t.id}</span></td>
+                    <td>
+                      <strong>${UI.escapeHtml(t.judul)}</strong>
+                      ${t.deskripsi ? `<div class="text-xs text-muted">${UI.escapeHtml(t.deskripsi)}</div>` : ''}
+                    </td>
+                    <td style="text-align: center;">
+                      <button class="btn btn-ghost btn-sm" style="padding: 2px 6px;" onclick="promptEditTopic('${t.id}')" title="Edit">✏️</button>
+                      <button class="btn btn-ghost btn-sm text-danger" style="padding: 2px 6px;" onclick="promptDeleteTopic('${t.id}', '${UI.escapeHtml(t.judul)}')" title="Hapus">🗑</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      };
+
+      const content = `
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Tabs or side-by-side -->
+          <div>
+            <h5 style="font-size: 0.95rem; margin-bottom: 6px; color: var(--primary);">📘 Semester Ganjil (${ganjilTopics.length} Topik)</h5>
+            ${renderTable(ganjilTopics)}
+          </div>
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 4px 0;">
+          <div>
+            <h5 style="font-size: 0.95rem; margin-bottom: 6px; color: var(--primary);">📗 Semester Genap (${genapTopics.length} Topik)</h5>
+            ${renderTable(genapTopics)}
+          </div>
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 4px 0;">
+          <!-- Form Tambah Topik Baru -->
+          <div style="background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
+            <h5 style="font-size: 0.9rem; margin-bottom: 8px;">➕ Tambah Topik / Materi Baru</h5>
+            <div style="display: grid; grid-template-columns: 1fr 120px; gap: 8px; margin-bottom: 8px;">
+              <input type="text" class="form-input" id="newTopicTitle" placeholder="Judul Topik (mis: Bioteknologi Modern)">
+              <select class="form-select" id="newTopicSemester">
+                <option value="Ganjil">Ganjil</option>
+                <option value="Genap">Genap</option>
+              </select>
+            </div>
+            <input type="text" class="form-input" id="newTopicDesc" placeholder="Deskripsi singkat topik (opsional)" style="margin-bottom: 8px;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="saveNewTopic()">Simpan Topik Baru</button>
+          </div>
+        </div>
+      `;
+
+      const footer = `
+        <div class="flex justify-between items-center" style="width: 100%;">
+          <span class="text-xs text-muted">Hanya guru yang dapat mengelola topik pembelajaran.</span>
+          <button class="btn btn-secondary" onclick="UI.hideModal('manageTopicsModal')">Tutup</button>
+        </div>
+      `;
+
+      UI.createModal('manageTopicsModal', '⚙️ Kelola Topik & Materi Biologi', content, footer);
+    }
+
+    async function saveNewTopic() {
+      const judul = document.getElementById('newTopicTitle')?.value.trim();
+      const semester = document.getElementById('newTopicSemester')?.value || 'Ganjil';
+      const deskripsi = document.getElementById('newTopicDesc')?.value.trim() || '';
+
+      if (!judul) {
+        UI.toastError('Error', 'Judul Topik harus diisi');
+        return;
+      }
+
+      UI.showLoading('Menambahkan topik...');
+      try {
+        await API.addTopic(judul, semester, deskripsi);
+        UI.toastSuccess('Berhasil', `Topik "${judul}" berhasil ditambahkan`);
+        await loadTopics();
+        renderManageTopicsContent();
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function promptEditTopic(id) {
+      showEditTopicModal(id);
+    }
+
+    function showEditTopicModal(id) {
+      const topic = allTopics.find(t => t.id === id);
+      if (!topic) return;
+
+      const content = `
+        <div class="form-group mb-3">
+          <label class="form-label">ID Topik</label>
+          <input type="text" class="form-input" value="${topic.id}" readonly style="background: var(--bg-hover); opacity: 0.85;">
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Judul Topik / Materi <span class="text-danger">*</span></label>
+          <input type="text" class="form-input" id="editTopicJudul" value="${UI.escapeHtml(topic.judul)}" placeholder="Judul topik materi">
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Semester</label>
+          <select class="form-select" id="editTopicSemester">
+            <option value="Ganjil" ${topic.semester === 'Ganjil' ? 'selected' : ''}>Semester Ganjil</option>
+            <option value="Genap" ${topic.semester === 'Genap' ? 'selected' : ''}>Semester Genap</option>
+          </select>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Deskripsi Topik / Materi</label>
+          <textarea class="form-textarea" id="editTopicDesc" rows="3" placeholder="Tuliskan deskripsi atau ringkasan topik materi...">${UI.escapeHtml(topic.deskripsi || '')}</textarea>
+          <div class="form-hint">Deskripsi ini akan membantu siswa dan guru memahami lingkup materi pembelajaran.</div>
+        </div>
+      `;
+
+      const footer = `
+        <div class="flex gap-3" style="justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="UI.hideModal('editTopicModal')">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="submitEditTopic('${topic.id}')">💾 Simpan Perubahan</button>
+        </div>
+      `;
+
+      UI.createModal('editTopicModal', `✏️ Edit Topik & Materi (${topic.id})`, content, footer);
+      UI.showModal('editTopicModal');
+      setTimeout(() => document.getElementById('editTopicJudul')?.focus(), 300);
+    }
+
+    async function submitEditTopic(id) {
+      const topic = allTopics.find(t => t.id === id);
+      if (!topic) return;
+
+      const judul = document.getElementById('editTopicJudul')?.value.trim();
+      const semester = document.getElementById('editTopicSemester')?.value || topic.semester;
+      const deskripsi = document.getElementById('editTopicDesc')?.value.trim() || '';
+
+      if (!judul) {
+        UI.toastError('Error', 'Judul Topik tidak boleh kosong');
+        return;
+      }
+
+      UI.hideModal('editTopicModal');
+      UI.showLoading('Memperbarui topik...');
+
+      try {
+        await API.updateTopic(id, judul, semester, deskripsi, topic.urutan);
+        UI.toastSuccess('Berhasil', `Topik ${id} berhasil diperbarui`);
+        await loadTopics();
+        renderManageTopicsContent();
+        await loadGrades();
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function promptDeleteTopic(id, judul) {
+      UI.confirm(
+        '🗑 Hapus Topik',
+        `Yakin ingin menghapus topik "${judul}" (${id})? Kolom penilaian yang tertaut tidak akan dihapus secara otomatis.`,
+        async () => {
+          UI.showLoading('Menghapus topik...');
+          try {
+            await API.deleteTopic(id);
+            UI.toastSuccess('Berhasil', `Topik ${id} berhasil dihapus`);
+            await loadTopics();
+            renderManageTopicsContent();
+          } catch (err) {
+            UI.toastError('Gagal', err.message);
+          } finally {
+            UI.hideLoading();
+          }
+        }
+      );
+    }
+
+    // Comment Modal
+    function showCommentModal(nis, nama) {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+
+      const content = `
+        <p class="text-sm text-muted mb-4">Komentar untuk <strong>${nama}</strong> (${nis})</p>
+        <div class="form-group">
+          <label class="form-label">Pilih Item</label>
+          <select class="form-select" id="commentItem">
+            ${currentHeaders.map(h => `<option value="${h}">${h}</option>`).join('')}
+            <option value="Umum">Umum / Keseluruhan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Komentar</label>
+          <textarea class="form-textarea" id="commentText" placeholder="Tuliskan komentar atau catatan..."></textarea>
+        </div>
+      `;
+      const footer = `
+        <div class="flex gap-3" style="justify-content: flex-end;">
+          <button class="btn btn-secondary" onclick="UI.hideModal('commentModal')">Batal</button>
+          <button class="btn btn-primary" onclick="saveComment('${nis}', '${UI.escapeHtml(nama)}')">Simpan</button>
+        </div>
+      `;
+
+      UI.createModal('commentModal', '💬 Tambah Komentar', content, footer);
+      UI.showModal('commentModal');
+    }
+
+    async function saveComment(nis, nama) {
+      const kelas = document.getElementById('filterKelas').value;
+      const jenis = document.getElementById('filterJenis').value;
+      const item = document.getElementById('commentItem').value;
+      const komentar = document.getElementById('commentText').value.trim();
+
+      if (!komentar) {
+        UI.toastError('Error', 'Komentar tidak boleh kosong');
+        return;
+      }
+
+      UI.hideModal('commentModal');
+      try {
+        await API.saveComment(nis, nama, kelas, jenis, item, komentar);
+        UI.toastSuccess('Berhasil', 'Komentar berhasil disimpan');
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      }
+    }
+
+    // Warn before leaving with unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+      if (Object.keys(pendingChanges).length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+  </script>
+</body>
+</html>

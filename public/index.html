@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Portal Penilaian Biologi Kelas 11 Fase F - SMA Negeri 2 Ciamis">
+  <title>Login - Penilaian Biologi | SMA Negeri 2 Ciamis</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="icon" type="image/png" href="images/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nilai Biologi">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="auth-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="dna-decoration"></div>
+
+  <div class="auth-page">
+    <div class="auth-container">
+      <!-- Header -->
+      <div class="auth-header">
+        <div class="auth-logo">
+          <img src="images/logo.png" alt="Logo SMA Negeri 2 Ciamis" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkivZZWq710R9bcyNcRC5qdeCUQ-JhiFTtUJ5vYfSG-nGZqXLM-mfZFDnoxuENZ3LWV1Tk9NGomIpD1XygvXTJMbczibyejOxEx6-_Y9rVB_Cr91KdTQuk1UjXwNugQPx-o9ei7t3BxC-f40yuK-bmp47VkKHaoOhOzqESITzCQV50QIxNc32bv65Qom9q/s320/download.png'">
+        </div>
+        <h1 class="text-gradient">Portal Penilaian</h1>
+        <div class="school-name">SMA Negeri 2 Ciamis</div>
+        <div class="teacher-name">Biologi Kelas 11 Fase F • Muhammad Romzi Rosyadi, S.Pd</div>
+      </div>
+
+      <!-- API Setup Notice (hidden after configured) -->
+      <div class="card mb-6" id="apiSetup" style="display: none;">
+        <div class="card-header">
+          <h4>⚙️ Konfigurasi API</h4>
+        </div>
+        <div class="card-body">
+          <p class="text-sm text-muted mb-4">Masukkan URL deployment Google Apps Script Anda:</p>
+          <div class="form-group">
+            <input type="url" class="form-input" id="apiUrlInput" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+          </div>
+          <button class="btn btn-primary w-full" onclick="saveApiUrl()">Simpan & Lanjutkan</button>
+        </div>
+      </div>
+
+      <!-- Login Card -->
+      <div class="auth-card" id="loginCard">
+        <!-- Role Switcher -->
+        <div class="role-switcher">
+          <button class="role-btn active" data-role="siswa" onclick="switchRole('siswa')">
+            🎓 Siswa
+          </button>
+          <button class="role-btn" data-role="guru" onclick="switchRole('guru')">
+            👨‍🏫 Guru
+          </button>
+        </div>
+
+        <!-- Error Message -->
+        <div class="login-error" id="loginError">
+          <span>⚠</span>
+          <span id="loginErrorText"></span>
+        </div>
+
+        <!-- Login Form -->
+        <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+          <!-- Username / NIS -->
+          <div class="form-group">
+            <div class="input-icon-wrapper">
+              <span class="input-icon">🆔</span>
+              <input type="text" class="form-input" id="loginUsername" 
+                     placeholder="Masukkan NIS" required autocomplete="username">
+            </div>
+            <div class="form-hint" id="usernameHint">Gunakan Nomor Induk Siswa (NIS)</div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <div class="input-icon-wrapper">
+              <span class="input-icon">🔒</span>
+              <input type="password" class="form-input" id="loginPassword" 
+                     placeholder="Masukkan password" required autocomplete="current-password">
+              <button type="button" class="password-toggle" onclick="togglePassword()">
+                👁
+              </button>
+            </div>
+            <div class="form-hint" id="passwordHint">Password default: 123456</div>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn btn-primary login-btn" id="loginBtn">
+            <span id="loginBtnText">Masuk</span>
+            <div class="spinner spinner-sm" id="loginSpinner" style="display: none;"></div>
+          </button>
+        </form>
+
+        <!-- PWA Install Button -->
+        <div style="margin-top: var(--space-4); border-top: 1px solid var(--border-primary); padding-top: var(--space-4);">
+          <button type="button" class="btn btn-secondary btn-sm w-full" onclick="UI.triggerPwaInstall()" style="display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px dashed var(--primary-500); background: rgba(13, 148, 136, 0.08); font-weight: 600; padding: 10px;">
+            <span>📲</span> Download / Pasang Aplikasi di HP
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="auth-footer">
+        <p>© 2026 SMA Negeri 2 Ciamis — Portal Penilaian Biologi</p>
+        <p style="margin-top: 4px;">
+          <a href="#" onclick="showApiConfig()" style="font-size: 0.7rem;">⚙️ Konfigurasi API</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    let currentRole = 'siswa';
+
+    // Check if API is configured
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if user just logged out
+      try {
+        if (sessionStorage.getItem('just_logged_out')) {
+          sessionStorage.removeItem('just_logged_out');
+          if (typeof UI !== 'undefined' && UI.toastInfo) {
+            UI.toastInfo('Berhasil Keluar', 'Anda telah keluar dari aplikasi.');
+          }
+        }
+      } catch (e) {}
+
+      const apiUrl = API.getBaseUrl();
+      if (!apiUrl) {
+        document.getElementById('apiSetup').style.display = 'block';
+        document.getElementById('loginCard').style.display = 'none';
+      }
+
+      // Auto-redirect if logged in
+      if (API.isLoggedIn()) {
+        const user = API.getUser();
+        if (user && user.role === 'guru') {
+          window.location.replace('guru/dashboard.html');
+        } else if (user && user.role === 'siswa') {
+          window.location.replace('siswa/dashboard.html');
+        }
+      }
+    });
+
+    function saveApiUrl() {
+      const url = document.getElementById('apiUrlInput').value.trim();
+      if (!url) {
+        UI.toastError('Error', 'Masukkan URL yang valid');
+        return;
+      }
+      API.setBaseUrl(url);
+      document.getElementById('apiSetup').style.display = 'none';
+      document.getElementById('loginCard').style.display = 'block';
+      UI.toastSuccess('Berhasil', 'API URL berhasil disimpan');
+    }
+
+    function showApiConfig() {
+      document.getElementById('apiSetup').style.display = 'block';
+      document.getElementById('apiUrlInput').value = API.getBaseUrl();
+    }
+
+    function switchRole(role) {
+      currentRole = role;
+      document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.role === role);
+      });
+
+      const usernameInput = document.getElementById('loginUsername');
+      const usernameHint = document.getElementById('usernameHint');
+      const passwordHint = document.getElementById('passwordHint');
+
+      if (role === 'siswa') {
+        usernameInput.placeholder = 'Masukkan NIS';
+        usernameHint.textContent = 'Gunakan Nomor Induk Siswa (NIS)';
+        passwordHint.textContent = 'Password default: 123456';
+      } else {
+        usernameInput.placeholder = 'Username guru';
+        usernameHint.textContent = 'Gunakan username yang diberikan';
+        passwordHint.textContent = '';
+      }
+
+      // Clear error
+      document.getElementById('loginError').classList.remove('show');
+    }
+
+    function togglePassword() {
+      const input = document.getElementById('loginPassword');
+      const btn = document.querySelector('.password-toggle');
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+      const errorText = document.getElementById('loginErrorText');
+      const btn = document.getElementById('loginBtn');
+      const btnText = document.getElementById('loginBtnText');
+      const spinner = document.getElementById('loginSpinner');
+
+      errorEl.classList.remove('show');
+
+      // Validate
+      if (!username || !password) {
+        errorText.textContent = 'Username dan password harus diisi';
+        errorEl.classList.add('show');
+        return;
+      }
+
+      // Loading state
+      btn.disabled = true;
+      btnText.textContent = 'Memproses...';
+      spinner.style.display = 'inline-block';
+
+      try {
+        const data = await API.login(username, password, currentRole);
+        
+        UI.toastSuccess('Login Berhasil', `Selamat datang, ${data.user.nama || data.user.name}!`);
+
+        setTimeout(() => {
+          if (data.user.role === 'guru') {
+            window.location.replace('guru/dashboard.html');
+          } else {
+            window.location.replace('siswa/dashboard.html');
+          }
+        }, 300);
+
+      } catch (err) {
+        errorText.textContent = err.message;
+        errorEl.classList.add('show');
+        btn.disabled = false;
+        btnText.textContent = 'Masuk';
+        spinner.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

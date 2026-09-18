@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Siswa - Penilaian Biologi</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" type="image/png" href="../images/icon-192.png">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nilai Biologi">
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+</head>
+<body>
+  <div class="app-layout">
+    <button class="sidebar-toggle" aria-label="Menu">☰</button>
+    <div class="sidebar-overlay"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <img src="../images/logo.png" alt="Logo SMA Negeri 2 Ciamis" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkivZZWq710R9bcyNcRC5qdeCUQ-JhiFTtUJ5vYfSG-nGZqXLM-mfZFDnoxuENZ3LWV1Tk9NGomIpD1XygvXTJMbczibyejOxEx6-_Y9rVB_Cr91KdTQuk1UjXwNugQPx-o9ei7t3BxC-f40yuK-bmp47VkKHaoOhOzqESITzCQV50QIxNc32bv65Qom9q/s320/download.png'">
+          </div>
+          <div><div class="brand-text">Penilaian Biologi</div><div class="brand-sub">SMA Negeri 2 Ciamis</div></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Menu Utama</div>
+          <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+          <a href="input-nilai.html" class="nav-item"><span class="nav-icon">📝</span> Input Nilai</a>
+          <a href="manage-siswa.html" class="nav-item active"><span class="nav-icon">👥</span> Data Siswa</a>
+          <a href="rekap.html" class="nav-item"><span class="nav-icon">📋</span> Rekap Nilai</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Pengaturan</div>
+          <a href="pengaturan.html" class="nav-item"><span class="nav-icon">⚙️</span> Pengaturan</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">
+            <img src="../images/guru.png" alt="Foto Guru" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjhpg2qFZEUpqZXmvHPlKO0KNTcnF4RIEQSXTC33imZvn1rcRXGAGx-djkgIhouQtoFHUdGUzu8EKMh8wrWJUrkH95W3W8mw3w03DJe4p8WVsmYXf8jys8j4_xxf5aVL3sWgbVxiEv4ICnLQWDLt55rvn-icJYpV5a3nOCn1L46CI6WSvItOFdjfnQVfZSN/s320/OmzeeGhotoen_24.png'">
+          </div>
+          <div class="user-info"><div class="user-name" id="userName">Guru</div><div class="user-role">Guru Biologi</div></div>
+        </div>
+        <button class="sidebar-logout" onclick="API.logout()"><span>🚪</span> Keluar</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <div><h1 class="page-title">👥 Data Siswa</h1><p class="page-subtitle">Kelola data siswa per kelas</p></div>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Action Bar -->
+        <div class="action-bar">
+          <div class="action-bar-left filter-bar">
+            <select class="form-select" id="filterKelas" onchange="loadStudents()">
+              <option value="">Semua Kelas</option>
+              <option value="11 F1">11 F1</option>
+              <option value="11 F2">11 F2</option>
+              <option value="11 F3">11 F3</option>
+              <option value="11 F4">11 F4</option>
+              <option value="11 F5">11 F5</option>
+            </select>
+            <span class="badge badge-info" id="countBadge">0 siswa</span>
+          </div>
+          <div class="action-bar-right">
+            <button class="btn btn-success btn-sm" onclick="exportToExcel()" id="btnExport" title="Export data siswa ke file Excel">📤 Export Excel</button>
+            <button class="btn btn-secondary btn-sm" onclick="showImportModal()">📥 Import CSV</button>
+            <button class="btn btn-primary btn-sm" onclick="showAddModal()">➕ Tambah Siswa</button>
+          </div>
+        </div>
+
+        <!-- Student Table -->
+        <div class="card">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>NIS</th>
+                  <th>Nama Lengkap</th>
+                  <th>Kelas</th>
+                  <th>Tanggal Daftar</th>
+                  <th style="text-align: right;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="studentTableBody">
+                <tr><td colspan="6" class="text-center text-muted" style="padding: var(--space-8);">
+                  Memuat data...
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js"></script>
+  <script>
+    let students = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!API.requireAuth('guru')) return;
+      UI.initSidebar();
+      const user = API.getUser();
+      document.getElementById('userName').textContent = user.name || 'Guru';
+      UI.renderAvatar(document.getElementById('userAvatar'), user);
+      loadStudents();
+    });
+
+    async function loadStudents() {
+      const kelas = document.getElementById('filterKelas').value;
+      try {
+        const res = await API.getStudents(kelas);
+        students = res.students;
+        document.getElementById('countBadge').textContent = `${students.length} siswa`;
+        renderTable();
+      } catch (err) {
+        UI.toastError('Error', err.message);
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('studentTableBody');
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding: var(--space-8);">
+          Belum ada data siswa. Klik "Tambah Siswa" atau "Import CSV" untuk menambahkan.
+        </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = students.map((s, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td><code style="background:var(--surface-2); padding:2px 8px; border-radius:4px;">${s.nis}</code></td>
+          <td><strong>${UI.escapeHtml(s.nama)}</strong></td>
+          <td><span class="badge badge-info">${UI.escapeHtml(s.kelas)}</span></td>
+          <td class="text-muted text-sm">${UI.formatDate(s.createdAt)}</td>
+          <td style="text-align: right;">
+            <div class="flex gap-2" style="justify-content: flex-end;">
+              <button class="btn btn-ghost btn-sm" onclick="showEditModal('${s.nis}', '${UI.escapeHtml(s.nama)}', '${UI.escapeHtml(s.kelas)}')" title="Edit">✏️</button>
+              <button class="btn btn-ghost btn-sm" onclick="resetPwd('${s.nis}')" title="Reset Password">🔑</button>
+              <button class="btn btn-ghost btn-sm" onclick="deleteStudent('${s.nis}', '${UI.escapeHtml(s.nama)}')" title="Hapus" style="color:var(--danger);">🗑</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Add Student Modal
+    function showAddModal() {
+      const content = `
+        <div class="form-group">
+          <label class="form-label">NIS</label>
+          <input type="text" class="form-input" id="addNIS" placeholder="Contoh: 12345">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap</label>
+          <input type="text" class="form-input" id="addNama" placeholder="Nama lengkap siswa">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kelas</label>
+          <select class="form-select" id="addKelas">
+            <option value="11 F1">11 F1</option>
+            <option value="11 F2">11 F2</option>
+            <option value="11 F3">11 F3</option>
+            <option value="11 F4">11 F4</option>
+            <option value="11 F5">11 F5</option>
+          </select>
+        </div>
+        <div class="form-hint">Password default: 123456</div>
+      `;
+      const footer = `
+        <div class="flex gap-3" style="justify-content: flex-end;">
+          <button class="btn btn-secondary" onclick="UI.hideModal('addStudentModal')">Batal</button>
+          <button class="btn btn-primary" onclick="addStudent()">Tambah</button>
+        </div>
+      `;
+      UI.createModal('addStudentModal', '➕ Tambah Siswa', content, footer);
+      UI.showModal('addStudentModal');
+    }
+
+    async function addStudent() {
+      const nis = document.getElementById('addNIS').value.trim();
+      const nama = document.getElementById('addNama').value.trim();
+      const kelas = document.getElementById('addKelas').value;
+
+      if (!nis || !nama) {
+        UI.toastError('Error', 'NIS dan Nama harus diisi');
+        return;
+      }
+
+      UI.hideModal('addStudentModal');
+      UI.showLoading('Menambah siswa...');
+      try {
+        const res = await API.addStudent(nis, nama, kelas);
+        UI.toastSuccess('Berhasil', res.message);
+        await loadStudents();
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    // Edit Student Modal
+    function showEditModal(nis, nama, kelas) {
+      const content = `
+        <div class="form-group">
+          <label class="form-label">NIS</label>
+          <input type="text" class="form-input" id="editNis" value="${nis}" placeholder="Masukkan NIS">
+          <div class="form-hint">NIS siswa (dapat diubah, pastikan unik)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap</label>
+          <input type="text" class="form-input" id="editNama" value="${nama}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kelas</label>
+          <select class="form-select" id="editKelas">
+            ${['11 F1','11 F2','11 F3','11 F4','11 F5'].map(k => 
+              `<option value="${k}" ${k === kelas ? 'selected' : ''}>${k}</option>`
+            ).join('')}
+          </select>
+        </div>
+      `;
+      const footer = `
+        <div class="flex gap-3" style="justify-content: flex-end;">
+          <button class="btn btn-secondary" onclick="UI.hideModal('editStudentModal')">Batal</button>
+          <button class="btn btn-primary" onclick="updateStudent('${nis}')">Simpan</button>
+        </div>
+      `;
+      UI.createModal('editStudentModal', '✏️ Edit Data Siswa', content, footer);
+      UI.showModal('editStudentModal');
+    }
+
+    async function updateStudent(oldNis) {
+      const newNis = document.getElementById('editNis').value.trim();
+      const nama = document.getElementById('editNama').value.trim();
+      const kelas = document.getElementById('editKelas').value;
+
+      if (!newNis) {
+        UI.toastError('Error', 'NIS tidak boleh kosong');
+        return;
+      }
+      if (!nama) {
+        UI.toastError('Error', 'Nama siswa harus diisi');
+        return;
+      }
+
+      UI.hideModal('editStudentModal');
+      UI.showLoading('Mengupdate data...');
+      try {
+        const res = await API.updateStudent(oldNis, nama, kelas, newNis);
+        UI.toastSuccess('Berhasil', res?.message || 'Data siswa berhasil diupdate');
+        await loadStudents();
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    // Delete Student
+    function deleteStudent(nis, nama) {
+      UI.confirm(
+        '🗑 Hapus Siswa',
+        `Yakin ingin menghapus <strong>${nama}</strong> (NIS: ${nis})? Semua data nilai siswa ini juga akan dihapus.`,
+        async () => {
+          UI.showLoading('Menghapus siswa...');
+          try {
+            await API.deleteStudent(nis);
+            UI.toastSuccess('Berhasil', `${nama} berhasil dihapus`);
+            await loadStudents();
+          } catch (err) {
+            UI.toastError('Gagal', err.message);
+          } finally {
+            UI.hideLoading();
+          }
+        }
+      );
+    }
+
+    // Reset Password
+    function resetPwd(nis) {
+      UI.confirm(
+        '🔑 Reset Password',
+        'Password akan direset ke default (123456). Lanjutkan?',
+        async () => {
+          try {
+            const res = await API.resetPassword(nis);
+            UI.toastSuccess('Berhasil', res.message);
+          } catch (err) {
+            UI.toastError('Gagal', err.message);
+          }
+        },
+        'Ya, Reset',
+        'btn-primary'
+      );
+    }
+
+    // Import CSV Modal
+    function showImportModal() {
+      const content = `
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('csvFile').click()">
+          <div class="drop-icon">📄</div>
+          <div class="drop-text">Klik atau drag file CSV ke sini</div>
+          <div class="drop-hint">Format: NIS, Nama, Kelas (header wajib ada)</div>
+          <input type="file" id="csvFile" accept=".csv,.txt" style="display:none;" onchange="previewCSV(this)">
+        </div>
+        <div style="text-align: center; margin-top: var(--space-3);">
+          <a href="#" onclick="downloadTemplateCSV(); return false;" style="color: var(--primary-400); font-size: 0.8125rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            📋 Download Template CSV
+          </a>
+        </div>
+        <div id="csvPreview" style="display:none; margin-top: var(--space-4);">
+          <h5 class="mb-2">Preview Data:</h5>
+          <div class="table-container" style="max-height: 200px;">
+            <table class="table" id="csvPreviewTable">
+              <thead><tr><th>NIS</th><th>Nama</th><th>Kelas</th></tr></thead>
+              <tbody id="csvPreviewBody"></tbody>
+            </table>
+          </div>
+          <div class="text-sm text-muted mt-2" id="csvCount"></div>
+        </div>
+      `;
+      const footer = `
+        <div class="flex gap-3" style="justify-content: flex-end;">
+          <button class="btn btn-secondary" onclick="UI.hideModal('importModal')">Batal</button>
+          <button class="btn btn-primary" id="importBtn" onclick="importCSV()" disabled>Import</button>
+        </div>
+      `;
+      UI.createModal('importModal', '📥 Import Data Siswa dari CSV', content, footer);
+      UI.showModal('importModal');
+
+      // Setup drag and drop
+      const dropZone = document.getElementById('dropZone');
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) processCSVFile(file);
+      });
+    }
+
+    let csvData = [];
+
+    // Download Template CSV
+    function downloadTemplateCSV() {
+      const template = [
+        { NIS: '12345', Nama: 'Ahmad Fauzi', Kelas: '11 F1' },
+        { NIS: '12346', Nama: 'Siti Nurhaliza', Kelas: '11 F1' },
+        { NIS: '12347', Nama: 'Budi Santoso', Kelas: '11 F2' }
+      ];
+      UI.downloadCSV(template, 'Template_Import_Siswa.csv');
+      UI.toastInfo('Template Diunduh', 'Silakan isi data lalu import kembali');
+    }
+
+    // Export Data Siswa ke Excel
+    async function exportToExcel() {
+      if (students.length === 0) {
+        UI.toastWarning('Data Kosong', 'Tidak ada data siswa untuk diexport');
+        return;
+      }
+
+      const kelas = document.getElementById('filterKelas').value;
+      const exportData = students.map((s, i) => ({
+        'No': i + 1,
+        'NIS': s.nis,
+        'Nama Lengkap': s.nama,
+        'Kelas': s.kelas,
+        'Tanggal Daftar': UI.formatDate(s.createdAt)
+      }));
+
+      const kelasLabel = kelas ? kelas.replace(/\s+/g, '-') : 'Semua-Kelas';
+      const today = new Date().toISOString().slice(0, 10);
+      const filename = `Data_Siswa_${kelasLabel}_${today}.xlsx`;
+      const sheetName = kelas || 'Semua Kelas';
+
+      await UI.downloadExcel(exportData, filename, sheetName);
+      UI.toastSuccess('Export Berhasil', `${students.length} data siswa berhasil diexport ke Excel`);
+    }
+
+    function previewCSV(input) {
+      if (input.files.length > 0) {
+        processCSVFile(input.files[0]);
+      }
+    }
+
+    function processCSVFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const rows = UI.parseCSV(e.target.result);
+        csvData = rows.map(r => ({
+          nis: r.nis || r.NIS || r.no_induk || '',
+          nama: r.nama || r.Nama || r.name || r.NAMA || '',
+          kelas: r.kelas || r.Kelas || r.KELAS || ''
+        })).filter(r => r.nis && r.nama);
+
+        if (csvData.length === 0) {
+          UI.toastError('Error', 'Tidak ada data valid. Pastikan CSV memiliki kolom NIS, Nama, dan Kelas.');
+          return;
+        }
+
+        const tbody = document.getElementById('csvPreviewBody');
+        tbody.innerHTML = csvData.slice(0, 10).map(r => `
+          <tr><td>${r.nis}</td><td>${UI.escapeHtml(r.nama)}</td><td>${UI.escapeHtml(r.kelas)}</td></tr>
+        `).join('');
+
+        document.getElementById('csvPreview').style.display = 'block';
+        document.getElementById('csvCount').textContent = 
+          `${csvData.length} data ditemukan` + (csvData.length > 10 ? ' (menampilkan 10 pertama)' : '');
+        document.getElementById('importBtn').disabled = false;
+      };
+      reader.readAsText(file);
+    }
+
+    async function importCSV() {
+      if (csvData.length === 0) return;
+
+      UI.hideModal('importModal');
+      UI.showLoading(`Mengimport ${csvData.length} siswa...`);
+
+      try {
+        const res = await API.importStudents(csvData);
+        UI.toastSuccess('Import Berhasil', res.message);
+        csvData = [];
+        await loadStudents();
+      } catch (err) {
+        UI.toastError('Import Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard Guru - Penilaian Biologi Kelas 11">
+  <title>Dashboard Guru - Penilaian Biologi</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" type="image/png" href="../images/icon-192.png">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nilai Biologi">
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Mobile Toggle -->
+    <button class="sidebar-toggle" aria-label="Menu">☰</button>
+    <div class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <img src="../images/logo.png" alt="Logo SMA Negeri 2 Ciamis" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkivZZWq710R9bcyNcRC5qdeCUQ-JhiFTtUJ5vYfSG-nGZqXLM-mfZFDnoxuENZ3LWV1Tk9NGomIpD1XygvXTJMbczibyejOxEx6-_Y9rVB_Cr91KdTQuk1UjXwNugQPx-o9ei7t3BxC-f40yuK-bmp47VkKHaoOhOzqESITzCQV50QIxNc32bv65Qom9q/s320/download.png'">
+          </div>
+          <div>
+            <div class="brand-text">Penilaian Biologi</div>
+            <div class="brand-sub">SMA Negeri 2 Ciamis</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Menu Utama</div>
+          <a href="dashboard.html" class="nav-item active">
+            <span class="nav-icon">📊</span> Dashboard
+          </a>
+          <a href="input-nilai.html" class="nav-item">
+            <span class="nav-icon">📝</span> Input Nilai
+          </a>
+          <a href="manage-siswa.html" class="nav-item">
+            <span class="nav-icon">👥</span> Data Siswa
+          </a>
+          <a href="rekap.html" class="nav-item">
+            <span class="nav-icon">📋</span> Rekap Nilai
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Pengaturan</div>
+          <a href="pengaturan.html" class="nav-item">
+            <span class="nav-icon">⚙️</span> Pengaturan
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">
+            <img src="../images/guru.png" alt="Foto Guru" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjhpg2qFZEUpqZXmvHPlKO0KNTcnF4RIEQSXTC33imZvn1rcRXGAGx-djkgIhouQtoFHUdGUzu8EKMh8wrWJUrkH95W3W8mw3w03DJe4p8WVsmYXf8jys8j4_xxf5aVL3sWgbVxiEv4ICnLQWDLt55rvn-icJYpV5a3nOCn1L46CI6WSvItOFdjfnQVfZSN/s320/OmzeeGhotoen_24.png'">
+          </div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Muhammad Romzi R.</div>
+            <div class="user-role">Guru Biologi</div>
+          </div>
+        </div>
+        <button class="sidebar-logout" onclick="API.logout()">
+          <span>🚪</span> Keluar
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle" id="dashboardSubtitle">Selamat datang kembali!</p>
+          </div>
+        </div>
+        <div class="top-bar-right flex items-center gap-3">
+          <select class="form-select" id="dashSemesterFilter" onchange="onDashFilterChange()" style="font-size:0.85rem; padding: 6px 10px;">
+            <option value="ALL">Semua Semester</option>
+            <option value="Ganjil">Semester Ganjil</option>
+            <option value="Genap">Semester Genap</option>
+          </select>
+          <select class="form-select" id="dashTopicFilter" onchange="onDashFilterChange()" style="font-size:0.85rem; padding: 6px 10px; max-width: 220px;">
+            <option value="ALL">Semua Topik Nilai</option>
+          </select>
+          <span class="text-sm text-muted" id="currentDate"></span>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Topic Showcase Section -->
+        <div class="card mb-6" style="border-left: 4px solid var(--primary);">
+          <div class="card-header flex justify-between items-center" style="flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h3 class="card-title" style="display: flex; align-items: center; gap: 8px; font-size: 1.15rem;">
+                <span>🧬</span> Topik & Materi Pembelajaran Biologi
+              </h3>
+              <p class="text-sm text-muted" style="margin-top: 2px;">
+                Pilih topik materi di bawah untuk langsung menginput nilai atau melihat rekapitulasi.
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="btn-group" id="semesterPills" style="display: flex; gap: 4px; background: var(--bg-hover); padding: 3px; border-radius: 8px;">
+                <button type="button" class="btn btn-sm btn-primary" id="btnSemGanjil" onclick="selectTopicTab('Ganjil')">📘 Semester Ganjil</button>
+                <button type="button" class="btn btn-sm btn-ghost" id="btnSemGenap" onclick="selectTopicTab('Genap')">📗 Semester Genap</button>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="showManageTopicsModal()">
+                ⚙️ Kelola Topik
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid grid-3 gap-4 stagger" id="topicCardsGrid">
+              <!-- Dynamically populated topic cards -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-4 stagger mb-6" id="statsGrid">
+          <div class="card stat-card">
+            <div class="stat-icon" style="background: var(--success-bg);">👥</div>
+            <div class="stat-value" id="totalSiswa">-</div>
+            <div class="stat-label">Total Siswa</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="background: var(--info-bg);">📚</div>
+            <div class="stat-value" id="totalKelas">5</div>
+            <div class="stat-label">Jumlah Kelas</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="background: var(--warning-bg);">📈</div>
+            <div class="stat-value" id="avgNilai">-</div>
+            <div class="stat-label" id="avgNilaiLabel">Rata-rata Nilai</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.15);">✅</div>
+            <div class="stat-value" id="pctTuntas">-</div>
+            <div class="stat-label">% Ketuntasan</div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-2 mb-6">
+          <!-- Per-class stats -->
+          <div class="card">
+            <div class="card-header flex justify-between items-center">
+              <h4 class="card-title" id="classChartTitle">📊 Rata-rata Nilai per Kelas</h4>
+              <span class="badge badge-info" id="chartTopicBadge">Semua Topik</span>
+            </div>
+            <div class="card-body">
+              <canvas id="classChart" height="220"></canvas>
+            </div>
+          </div>
+
+          <!-- Grade Distribution -->
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🎯 Distribusi Predikat</h4>
+            </div>
+            <div class="card-body">
+              <canvas id="gradeDistChart" height="220"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Class Cards -->
+        <div class="card-header mb-4">
+          <h4 class="card-title">📑 Ringkasan per Kelas</h4>
+        </div>
+        <div class="grid grid-3 stagger" id="classCards">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js"></script>
+  <script>
+    const CLASSES = ['11 F1', '11 F2', '11 F3', '11 F4', '11 F5'];
+    let classChart, gradeDistChart;
+    let allTopics = [];
+    let currentTopicTab = 'Ganjil';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.requireAuth('guru')) return;
+      UI.initSidebar();
+
+      const user = API.getUser();
+      document.getElementById('userName').textContent = user.name || 'Guru';
+      UI.renderAvatar(document.getElementById('userAvatar'), user);
+      document.getElementById('dashboardSubtitle').textContent = 
+        `Selamat datang, ${user.name}!`;
+      document.getElementById('currentDate').textContent = 
+        new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      // Load topics first
+      await loadTopics();
+
+      // Load initial dashboard stats
+      await loadDashboard();
+    });
+
+    async function loadTopics() {
+      try {
+        const res = await API.getTopics();
+        allTopics = res.topics || [];
+        populateDashTopicFilter();
+        renderTopicCards();
+      } catch (e) {
+        console.error('Gagal memuat topik:', e);
+      }
+    }
+
+    function populateDashTopicFilter() {
+      const sem = document.getElementById('dashSemesterFilter').value;
+      const select = document.getElementById('dashTopicFilter');
+      const currentVal = select.value;
+
+      let filtered = allTopics;
+      if (sem && sem !== 'ALL') {
+        filtered = allTopics.filter(t => t.semester === sem);
+      }
+
+      let html = '<option value="ALL">Semua Topik (Umum)</option>';
+      filtered.forEach(t => {
+        html += `<option value="${t.id}">${t.id}: ${UI.escapeHtml(t.judul)}</option>`;
+      });
+      select.innerHTML = html;
+
+      if (filtered.some(t => t.id === currentVal)) {
+        select.value = currentVal;
+      } else {
+        select.value = 'ALL';
+      }
+    }
+
+    function selectTopicTab(semester) {
+      currentTopicTab = semester;
+      document.getElementById('btnSemGanjil').className = `btn btn-sm ${semester === 'Ganjil' ? 'btn-primary' : 'btn-ghost'}`;
+      document.getElementById('btnSemGenap').className = `btn btn-sm ${semester === 'Genap' ? 'btn-primary' : 'btn-ghost'}`;
+      renderTopicCards();
+    }
+
+    function renderTopicCards() {
+      const container = document.getElementById('topicCardsGrid');
+      const filtered = allTopics.filter(t => t.semester === currentTopicTab);
+
+      if (!filtered || filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1;" class="empty-state">
+            <div class="empty-icon">📖</div>
+            <div class="empty-title">Belum Ada Topik di Semester ${currentTopicTab}</div>
+            <div class="empty-text">Klik tombol "Kelola Topik" untuk menambahkan topik pembelajaran baru.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(t => `
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--primary); transition: transform 0.2s, box-shadow 0.2s;">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="badge badge-info" style="font-weight: 700;">${t.id}</span>
+              <span class="badge badge-outline" style="font-size: 0.72rem;">Semester ${t.semester}</span>
+            </div>
+            <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 6px; color: var(--text);">
+              ${UI.escapeHtml(t.judul)}
+            </h4>
+            <p class="text-xs text-muted" style="line-height: 1.4; margin-bottom: 12px;">
+              ${UI.escapeHtml(t.deskripsi || 'Topik kurikulum Biologi Kelas 11.')}
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border-color);">
+            <a href="input-nilai.html?topik=${encodeURIComponent(t.id)}&semester=${encodeURIComponent(t.semester)}" 
+               class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.8rem; text-align: center; justify-content: center;"
+               title="Input nilai untuk topik ${UI.escapeHtml(t.judul)}">
+              📝 Input Nilai
+            </a>
+            <a href="rekap.html?topik=${encodeURIComponent(t.id)}&semester=${encodeURIComponent(t.semester)}" 
+               class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: 6px 10px;"
+               title="Rekap nilai topik ini">
+              📋 Rekap
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function onDashFilterChange() {
+      populateDashTopicFilter();
+      await loadDashboard();
+    }
+
+    async function loadDashboard() {
+      UI.showLoading('Memuat dashboard...');
+
+      const semester = document.getElementById('dashSemesterFilter').value;
+      const topikId = document.getElementById('dashTopicFilter').value;
+
+      // Update badges
+      const topicBadge = document.getElementById('chartTopicBadge');
+      if (topikId && topikId !== 'ALL') {
+        const matched = allTopics.find(t => t.id === topikId);
+        topicBadge.textContent = matched ? `${matched.id}: ${matched.judul}` : topikId;
+        document.getElementById('avgNilaiLabel').textContent = `Rata-rata (${matched ? matched.id : topikId})`;
+      } else {
+        topicBadge.textContent = semester !== 'ALL' ? `Semester ${semester}` : 'Semua Topik';
+        document.getElementById('avgNilaiLabel').textContent = 'Rata-rata Nilai';
+      }
+
+      try {
+        const res = await API.getDashboardStats(
+          topikId !== 'ALL' ? topikId : null,
+          semester !== 'ALL' ? semester : null
+        );
+        const allStats = res.allClassStats || [];
+
+        let totalSiswa = 0;
+        let allNilai = [];
+        let totalTuntas = 0;
+        let totalBelumTuntas = 0;
+        let overallDist = { A: 0, B: 0, C: 0, D: 0 };
+
+        for (const item of allStats) {
+          const s = item.stats || {};
+          totalSiswa += (s.totalSiswa || 0);
+          if (s.rataRata > 0) allNilai.push(s.rataRata);
+          totalTuntas += (s.tuntas || 0);
+          totalBelumTuntas += (s.belumTuntas || 0);
+          if (s.distribusi) {
+            overallDist.A += (s.distribusi.A || 0);
+            overallDist.B += (s.distribusi.B || 0);
+            overallDist.C += (s.distribusi.C || 0);
+            overallDist.D += (s.distribusi.D || 0);
+          }
+        }
+
+        // Update stat cards
+        document.getElementById('totalSiswa').textContent = totalSiswa;
+        document.getElementById('totalKelas').textContent = CLASSES.length;
+
+        const avgAll = allNilai.length > 0 
+          ? (allNilai.reduce((a, b) => a + b, 0) / allNilai.length).toFixed(1)
+          : '-';
+        document.getElementById('avgNilai').textContent = avgAll;
+
+        const pctTuntas = totalSiswa > 0
+          ? ((totalTuntas / totalSiswa) * 100).toFixed(1) + '%'
+          : '-';
+        document.getElementById('pctTuntas').textContent = pctTuntas;
+
+        // Render class bar chart
+        renderClassChart(allStats);
+
+        // Render grade distribution chart
+        renderGradeDistChart(overallDist);
+
+        // Render class cards
+        renderClassCards(allStats);
+
+      } catch (err) {
+        UI.toastError('Error', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function renderClassChart(allStats) {
+      const ctx = document.getElementById('classChart').getContext('2d');
+      if (classChart) classChart.destroy();
+
+      const labels = allStats.map(s => s.kelas);
+      const data = allStats.map(s => s.stats?.rataRata || 0);
+
+      classChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Rata-rata Nilai',
+            data,
+            backgroundColor: data.map(v => v >= 75 
+              ? 'rgba(16, 185, 129, 0.6)' 
+              : 'rgba(244, 63, 94, 0.6)'),
+            borderColor: data.map(v => v >= 75 
+              ? 'rgba(16, 185, 129, 1)' 
+              : 'rgba(244, 63, 94, 1)'),
+            borderWidth: 1,
+            borderRadius: 8,
+            barThickness: 36
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1f2937',
+              titleColor: '#f9fafb',
+              bodyColor: '#d1d5db',
+              borderColor: '#374151',
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#9ca3af' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#9ca3af' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderGradeDistChart(dist) {
+      const ctx = document.getElementById('gradeDistChart').getContext('2d');
+      if (gradeDistChart) gradeDistChart.destroy();
+
+      gradeDistChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Predikat A (≥90)', 'Predikat B (80-89)', 'Predikat C (70-79)', 'Predikat D (<70)'],
+          datasets: [{
+            data: [dist.A, dist.B, dist.C, dist.D],
+            backgroundColor: [
+              'rgba(52, 211, 153, 0.8)',
+              'rgba(96, 165, 250, 0.8)',
+              'rgba(251, 191, 36, 0.8)',
+              'rgba(251, 113, 133, 0.8)'
+            ],
+            borderColor: 'rgba(17, 24, 39, 0.8)',
+            borderWidth: 3,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '55%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#9ca3af',
+                padding: 16,
+                usePointStyle: true,
+                pointStyleWidth: 10,
+                font: { size: 11 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderClassCards(allStats) {
+      const container = document.getElementById('classCards');
+      const activeTopic = document.getElementById('dashTopicFilter').value;
+      const activeSem = document.getElementById('dashSemesterFilter').value;
+      
+      let querySuffix = '';
+      if (activeTopic && activeTopic !== 'ALL') querySuffix += `&topik=${encodeURIComponent(activeTopic)}`;
+      if (activeSem && activeSem !== 'ALL') querySuffix += `&semester=${encodeURIComponent(activeSem)}`;
+
+      container.innerHTML = allStats.map(s => {
+        const stats = s.stats;
+        const hasData = stats && stats.totalSiswa > 0;
+
+        return `
+          <div class="card" style="cursor: pointer;" onclick="window.location.href='rekap.html?kelas=${encodeURIComponent(s.kelas)}${querySuffix}'">
+            <div class="card-header">
+              <h4 class="card-title">🏫 Kelas ${UI.escapeHtml(s.kelas)}</h4>
+              <span class="badge badge-info">${hasData ? stats.totalSiswa : 0} siswa</span>
+            </div>
+            <div class="card-body">
+              ${hasData ? `
+                <div class="grid grid-2 gap-3" style="grid-template-columns: 1fr 1fr;">
+                  <div>
+                    <div class="text-xs text-muted">Rata-rata</div>
+                    <div class="text-lg" style="font-weight: 700; color: ${stats.rataRata >= 75 ? 'var(--success)' : 'var(--danger)'}">
+                      ${stats.rataRata}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-muted">Ketuntasan</div>
+                    <div class="text-lg" style="font-weight: 700; color: ${stats.persentaseTuntas >= 75 ? 'var(--success)' : 'var(--warning)'}">
+                      ${stats.persentaseTuntas}%
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-muted">Tertinggi</div>
+                    <div style="font-weight: 600; color: var(--primary-400);">${stats.nilaiTertinggi}</div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-muted">Terendah</div>
+                    <div style="font-weight: 600; color: var(--accent-rose);">${stats.nilaiTerendah}</div>
+                  </div>
+                </div>
+                <div class="progress-bar mt-4">
+                  <div class="progress-fill" style="width: ${stats.persentaseTuntas}%;"></div>
+                </div>
+                <div class="text-xs text-muted mt-2">${stats.tuntas} tuntas, ${stats.belumTuntas} belum tuntas</div>
+              ` : `
+                <div class="empty-state" style="padding: var(--space-4);">
+                  <div class="empty-text">Belum ada data nilai</div>
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Modal Manajemen Topik Guru
+    function showManageTopicsModal() {
+      renderManageTopicsContent();
+      UI.showModal('manageTopicsModal');
+    }
+
+    function renderManageTopicsContent() {
+      const ganjilTopics = allTopics.filter(t => t.semester === 'Ganjil');
+      const genapTopics = allTopics.filter(t => t.semester === 'Genap');
+
+      const renderTable = (list) => {
+        if (!list || list.length === 0) {
+          return '<p class="text-sm text-muted" style="padding: 12px 0;">Belum ada topik di semester ini.</p>';
+        }
+        return `
+          <div style="max-height: 200px; overflow-y: auto; margin-bottom: 12px;">
+            <table class="table" style="font-size: 0.85rem;">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">ID</th>
+                  <th>Judul Topik / Materi</th>
+                  <th style="width: 80px; text-align: center;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${list.map(t => `
+                  <tr>
+                    <td><span class="badge badge-info">${t.id}</span></td>
+                    <td>
+                      <strong>${UI.escapeHtml(t.judul)}</strong>
+                      ${t.deskripsi ? `<div class="text-xs text-muted">${UI.escapeHtml(t.deskripsi)}</div>` : ''}
+                    </td>
+                    <td style="text-align: center;">
+                      <button class="btn btn-ghost btn-sm" style="padding: 2px 6px;" onclick="promptEditTopic('${t.id}')" title="Edit">✏️</button>
+                      <button class="btn btn-ghost btn-sm text-danger" style="padding: 2px 6px;" onclick="promptDeleteTopic('${t.id}', '${UI.escapeHtml(t.judul)}')" title="Hapus">🗑</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      };
+
+      const content = `
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <h5 style="font-size: 0.95rem; margin-bottom: 6px; color: var(--primary);">📘 Semester Ganjil (${ganjilTopics.length} Topik)</h5>
+            ${renderTable(ganjilTopics)}
+          </div>
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 4px 0;">
+          <div>
+            <h5 style="font-size: 0.95rem; margin-bottom: 6px; color: var(--primary);">📗 Semester Genap (${genapTopics.length} Topik)</h5>
+            ${renderTable(genapTopics)}
+          </div>
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 4px 0;">
+          <!-- Form Tambah Topik Baru -->
+          <div style="background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
+            <h5 style="font-size: 0.9rem; margin-bottom: 8px;">➕ Tambah Topik / Materi Baru</h5>
+            <div style="display: grid; grid-template-columns: 1fr 120px; gap: 8px; margin-bottom: 8px;">
+              <input type="text" class="form-input" id="newTopicTitle" placeholder="Judul Topik (mis: Bioteknologi Modern)">
+              <select class="form-select" id="newTopicSemester">
+                <option value="Ganjil">Ganjil</option>
+                <option value="Genap">Genap</option>
+              </select>
+            </div>
+            <input type="text" class="form-input" id="newTopicDesc" placeholder="Deskripsi singkat topik (opsional)" style="margin-bottom: 8px;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="saveNewTopic()">Simpan Topik Baru</button>
+          </div>
+        </div>
+      `;
+
+      const footer = `
+        <div class="flex justify-between items-center" style="width: 100%;">
+          <span class="text-xs text-muted">Hanya guru yang dapat mengelola topik pembelajaran.</span>
+          <button class="btn btn-secondary" onclick="UI.hideModal('manageTopicsModal')">Tutup</button>
+        </div>
+      `;
+
+      UI.createModal('manageTopicsModal', '⚙️ Kelola Topik & Materi Biologi', content, footer);
+    }
+
+    async function saveNewTopic() {
+      const judul = document.getElementById('newTopicTitle')?.value.trim();
+      const semester = document.getElementById('newTopicSemester')?.value || 'Ganjil';
+      const deskripsi = document.getElementById('newTopicDesc')?.value.trim() || '';
+
+      if (!judul) {
+        UI.toastError('Error', 'Judul Topik harus diisi');
+        return;
+      }
+
+      UI.showLoading('Menambahkan topik...');
+      try {
+        await API.addTopic(judul, semester, deskripsi);
+        UI.toastSuccess('Berhasil', `Topik "${judul}" berhasil ditambahkan`);
+        await loadTopics();
+        renderManageTopicsContent();
+        await loadDashboard();
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function promptEditTopic(id) {
+      showEditTopicModal(id);
+    }
+
+    function showEditTopicModal(id) {
+      const topic = allTopics.find(t => t.id === id);
+      if (!topic) return;
+
+      const content = `
+        <div class="form-group mb-3">
+          <label class="form-label">ID Topik</label>
+          <input type="text" class="form-input" value="${topic.id}" readonly style="background: var(--bg-hover); opacity: 0.85;">
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Judul Topik / Materi <span class="text-danger">*</span></label>
+          <input type="text" class="form-input" id="editTopicJudul" value="${UI.escapeHtml(topic.judul)}" placeholder="Judul topik materi">
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Semester</label>
+          <select class="form-select" id="editTopicSemester">
+            <option value="Ganjil" ${topic.semester === 'Ganjil' ? 'selected' : ''}>Semester Ganjil</option>
+            <option value="Genap" ${topic.semester === 'Genap' ? 'selected' : ''}>Semester Genap</option>
+          </select>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Deskripsi Topik / Materi</label>
+          <textarea class="form-textarea" id="editTopicDesc" rows="3" placeholder="Tuliskan deskripsi atau ringkasan topik materi...">${UI.escapeHtml(topic.deskripsi || '')}</textarea>
+          <div class="form-hint">Deskripsi ini akan tampil pada kartu topik siswa dan guru sebagai ringkasan materi.</div>
+        </div>
+      `;
+
+      const footer = `
+        <div class="flex gap-3" style="justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="UI.hideModal('editTopicModal')">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="submitEditTopic('${topic.id}')">💾 Simpan Perubahan</button>
+        </div>
+      `;
+
+      UI.createModal('editTopicModal', `✏️ Edit Topik & Materi (${topic.id})`, content, footer);
+      UI.showModal('editTopicModal');
+      setTimeout(() => document.getElementById('editTopicJudul')?.focus(), 300);
+    }
+
+    async function submitEditTopic(id) {
+      const topic = allTopics.find(t => t.id === id);
+      if (!topic) return;
+
+      const judul = document.getElementById('editTopicJudul')?.value.trim();
+      const semester = document.getElementById('editTopicSemester')?.value || topic.semester;
+      const deskripsi = document.getElementById('editTopicDesc')?.value.trim() || '';
+
+      if (!judul) {
+        UI.toastError('Error', 'Judul Topik tidak boleh kosong');
+        return;
+      }
+
+      UI.hideModal('editTopicModal');
+      UI.showLoading('Memperbarui topik...');
+
+      try {
+        await API.updateTopic(id, judul, semester, deskripsi, topic.urutan);
+        UI.toastSuccess('Berhasil', `Topik ${id} berhasil diperbarui`);
+        await loadTopics();
+        renderManageTopicsContent();
+        await loadDashboard();
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function promptDeleteTopic(id, judul) {
+      UI.confirm(
+        '🗑 Hapus Topik',
+        `Yakin ingin menghapus topik "${judul}" (${id})? Kolom penilaian yang tertaut tidak akan dihapus secara otomatis.`,
+        async () => {
+          UI.showLoading('Menghapus topik...');
+          try {
+            await API.deleteTopic(id);
+            UI.toastSuccess('Berhasil', `Topik ${id} berhasil dihapus`);
+            await loadTopics();
+            renderManageTopicsContent();
+            await loadDashboard();
+          } catch (err) {
+            UI.toastError('Gagal', err.message);
+          } finally {
+            UI.hideLoading();
+          }
+        }
+      );
+    }
+  </script>
+</body>
+</html>

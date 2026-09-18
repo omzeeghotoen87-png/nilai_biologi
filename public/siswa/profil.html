@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil - Penilaian Biologi</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" type="image/png" href="../images/icon-192.png">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nilai Biologi">
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+</head>
+<body>
+  <div class="app-layout">
+    <button class="sidebar-toggle" aria-label="Menu">☰</button>
+    <div class="sidebar-overlay"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <img src="../images/logo.png" alt="Logo SMA Negeri 2 Ciamis" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkivZZWq710R9bcyNcRC5qdeCUQ-JhiFTtUJ5vYfSG-nGZqXLM-mfZFDnoxuENZ3LWV1Tk9NGomIpD1XygvXTJMbczibyejOxEx6-_Y9rVB_Cr91KdTQuk1UjXwNugQPx-o9ei7t3BxC-f40yuK-bmp47VkKHaoOhOzqESITzCQV50QIxNc32bv65Qom9q/s320/download.png'">
+          </div>
+          <div><div class="brand-text">Penilaian Biologi</div><div class="brand-sub">SMA Negeri 2 Ciamis</div></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Menu</div>
+          <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+          <a href="nilai.html" class="nav-item"><span class="nav-icon">📋</span> Detail Nilai</a>
+          <a href="grafik.html" class="nav-item"><span class="nav-icon">📈</span> Grafik</a>
+          <a href="profil.html" class="nav-item active"><span class="nav-icon">👤</span> Profil</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">??</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Siswa</div>
+            <div class="user-role" id="userClass">Kelas -</div>
+          </div>
+        </div>
+        <button class="sidebar-logout" onclick="API.logout()"><span>🚪</span> Keluar</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <div>
+            <h1 class="page-title">👤 Profil</h1>
+            <p class="page-subtitle">Informasi akun dan ubah password</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="grid grid-2">
+          <!-- Profile Info -->
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">📋 Informasi Siswa</h4>
+            </div>
+            <div class="card-body">
+              <div style="text-align: center; margin-bottom: var(--space-6);">
+                <div style="position: relative; width: 100px; height: 100px; margin: 0 auto var(--space-3);">
+                  <div id="profileAvatar" style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary-500), var(--accent-teal)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; color: white; box-shadow: var(--shadow-glow-lg); overflow: hidden; border: 3px solid rgba(16, 185, 129, 0.4);">
+                    ??
+                  </div>
+                  <button type="button" onclick="document.getElementById('photoInput').click()" 
+                          style="position: absolute; bottom: 0; right: 0; width: 34px; height: 34px; border-radius: 50%; background: var(--primary); border: 2px solid var(--bg-card); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: transform 0.2s;"
+                          title="Ganti Foto Profil">
+                    📷
+                  </button>
+                  <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="handlePhotoSelected(event)">
+                </div>
+
+                <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-bottom: var(--space-2); flex-wrap: wrap;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('photoInput').click()" style="font-size: 0.78rem; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                    <span>📷</span> Unggah Foto
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-sm" id="btnHapusFoto" onclick="hapusFoto()" style="font-size: 0.78rem; padding: 5px 10px; color: var(--danger); display: none;">
+                    <span>🗑️</span> Hapus Foto
+                  </button>
+                </div>
+                <div class="text-xs text-muted mb-2">Format: JPG, PNG, atau WEBP (otomatis dikompres & disimpan).</div>
+                <h3 id="profileName">-</h3>
+              </div>
+              
+              <div style="display: grid; gap: var(--space-3);">
+                <div style="display: flex; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-primary);">
+                  <span class="text-muted">NIS</span>
+                  <strong id="profileNIS">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-primary);">
+                  <span class="text-muted">Kelas</span>
+                  <strong id="profileKelas">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-primary);">
+                  <span class="text-muted">Mata Pelajaran</span>
+                  <strong>Biologi</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-primary);">
+                  <span class="text-muted">Guru Mata Pelajaran</span>
+                  <span style="display: inline-flex; align-items: center; gap: 8px;">
+                    <img src="../images/guru.png" alt="Foto Guru" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjhpg2qFZEUpqZXmvHPlKO0KNTcnF4RIEQSXTC33imZvn1rcRXGAGx-djkgIhouQtoFHUdGUzu8EKMh8wrWJUrkH95W3W8mw3w03DJe4p8WVsmYXf8jys8j4_xxf5aVL3sWgbVxiEv4ICnLQWDLt55rvn-icJYpV5a3nOCn1L46CI6WSvItOFdjfnQVfZSN/s320/OmzeeGhotoen_24.png'" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--primary-500);">
+                    <strong>Muhammad Romzi Rosyadi, S.Pd</strong>
+                  </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-primary); flex-wrap: wrap; gap: 8px;">
+                  <span class="text-muted">Kontak Guru</span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="tel:082127539686" class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px;" title="Telepon Guru">
+                      📞 <span>082127539686</span>
+                    </a>
+                    <a id="linkWAGuru" href="https://wa.me/6282127539686" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: 4px 10px; background: #25D366; border-color: #25D366; color: white; display: inline-flex; align-items: center; gap: 4px;" title="Hubungi via WhatsApp">
+                      💬 <span>WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) 0;">
+                  <span class="text-muted">Sekolah</span>
+                  <span style="display: inline-flex; align-items: center; gap: 8px;">
+                    <img src="../images/logo.png" alt="Logo" style="width: 20px; height: 20px; object-fit: contain;">
+                    <strong>SMA Negeri 2 Ciamis</strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Change Password -->
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🔒 Ubah Password</h4>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Password Lama</label>
+                <input type="password" class="form-input" id="oldPassword" placeholder="Masukkan password lama">
+                <div class="form-hint">Password default: 123456</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Password Baru</label>
+                <input type="password" class="form-input" id="newPassword" placeholder="Masukkan password baru">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Konfirmasi Password Baru</label>
+                <input type="password" class="form-input" id="confirmPassword" placeholder="Ulangi password baru">
+              </div>
+              <button class="btn btn-primary w-full" onclick="changePassword()">🔑 Ubah Password</button>
+
+              <div style="margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--border-primary);">
+                <h5 class="mb-4">🔔 Notifikasi Browser</h5>
+                <p class="text-sm text-muted mb-4">Aktifkan notifikasi browser untuk menerima pemberitahuan saat guru memperbarui nilai.</p>
+                <button class="btn btn-secondary w-full" onclick="enableNotifications()">
+                  🔔 Aktifkan Notifikasi
+                </button>
+                <div class="text-xs text-muted mt-2" id="notifStatus"></div>
+              </div>
+
+              <!-- PWA Install & Update Section -->
+              <div style="margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--border-primary);">
+                <h5 class="mb-2">📲 Aplikasi & Pembaruan</h5>
+                <p class="text-sm text-muted mb-3">Aplikasi ini otomatis terhubung ke server sekolah. Jika guru menambahkan fitur baru, aplikasi akan memperbarui otomatis tanpa perlu install ulang.</p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <button class="btn btn-secondary w-full" onclick="UI.triggerPwaInstall()" style="border-color: var(--primary-500); background: rgba(13, 148, 136, 0.08); font-weight: 600;">
+                    📲 Pasang Aplikasi ke Layar HP
+                  </button>
+                  <button class="btn btn-ghost w-full" onclick="UI.checkForAppUpdate()" style="font-size: 0.82rem; border: 1px dashed var(--border-primary); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>🔄</span> Periksa Pembaruan Aplikasi
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js"></script>
+  <script>
+    let user;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!API.requireAuth('siswa')) return;
+      UI.initSidebar();
+
+      user = API.getUser();
+      document.getElementById('userName').textContent = user.nama;
+      document.getElementById('userClass').textContent = `Kelas ${user.kelas}`;
+
+      document.getElementById('profileName').textContent = user.nama;
+      document.getElementById('profileNIS').textContent = user.nis;
+      document.getElementById('profileKelas').textContent = user.kelas;
+
+      // Update WhatsApp link with pre-filled text
+      const waLink = document.getElementById('linkWAGuru');
+      if (waLink) {
+        const text = encodeURIComponent(`Halo Pak Romzi, saya ${user.nama} dari kelas ${user.kelas} (NIS: ${user.nis}).`);
+        waLink.href = `https://wa.me/6282127539686?text=${text}`;
+      }
+
+      // Render avatars
+      updateProfileAvatar();
+
+      // Check notification permission
+      updateNotifStatus();
+    });
+
+    function updateProfileAvatar() {
+      const avatarEl = document.getElementById('profileAvatar');
+      const userAvatarEl = document.getElementById('userAvatar');
+      const btnHapus = document.getElementById('btnHapusFoto');
+      
+      const photo = user.foto || localStorage.getItem(`student_photo_${user.nis}`);
+      if (photo) {
+        avatarEl.innerHTML = `<img src="${photo}" alt="Foto Profil" style="width:100%; height:100%; object-fit:cover; border-radius:50%; display:block;">`;
+        if (userAvatarEl) userAvatarEl.innerHTML = `<img src="${photo}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:inherit; display:block;">`;
+        if (btnHapus) btnHapus.style.display = 'inline-flex';
+      } else {
+        avatarEl.textContent = UI.getInitials(user.nama);
+        if (userAvatarEl) userAvatarEl.textContent = UI.getInitials(user.nama);
+        if (btnHapus) btnHapus.style.display = 'none';
+      }
+    }
+
+    function handlePhotoSelected(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        UI.toastError('Format Tidak Sesuai', 'Harap pilih file gambar (JPG, PNG, atau WEBP)');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        UI.toastError('File Terlalu Besar', 'Ukuran foto maksimal 5MB');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          // Compress & crop to square 160x160 canvas
+          const canvas = document.createElement('canvas');
+          canvas.width = 160;
+          canvas.height = 160;
+          const ctx = canvas.getContext('2d');
+
+          // Center crop
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 160, 160);
+
+          // Get compressed Base64 JPEG (approx 6-10KB)
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+          // Save photo
+          savePhoto(compressedDataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    async function savePhoto(photoDataUrl) {
+      UI.showLoading('Menyimpan foto profil...');
+      try {
+        await API.updateStudentPhoto(user.nis, photoDataUrl);
+        user.foto = photoDataUrl;
+        updateProfileAvatar();
+        UI.toastSuccess('Berhasil', 'Foto profil berhasil diperbarui!');
+      } catch (err) {
+        // Fallback save to localStorage if offline/delayed
+        try {
+          localStorage.setItem(`student_photo_${user.nis}`, photoDataUrl);
+          user.foto = photoDataUrl;
+          API.setUser(user);
+          updateProfileAvatar();
+          UI.toastSuccess('Tersimpan', 'Foto profil berhasil disimpan!');
+        } catch (e) {
+          UI.toastError('Gagal', err.message);
+        }
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    async function hapusFoto() {
+      const ok = await UI.confirm('Hapus Foto Profil', 'Apakah kamu yakin ingin menghapus foto profil ini dan kembali menggunakan inisial?');
+      if (!ok) return;
+
+      UI.showLoading('Menghapus foto...');
+      try {
+        await API.updateStudentPhoto(user.nis, '');
+        user.foto = '';
+        updateProfileAvatar();
+        UI.toastSuccess('Berhasil', 'Foto profil telah dihapus');
+      } catch (err) {
+        user.foto = '';
+        localStorage.removeItem(`student_photo_${user.nis}`);
+        API.setUser(user);
+        updateProfileAvatar();
+        UI.toastSuccess('Berhasil', 'Foto profil telah dihapus');
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    async function changePassword() {
+      const oldPwd = document.getElementById('oldPassword').value;
+      const newPwd = document.getElementById('newPassword').value;
+      const confirmPwd = document.getElementById('confirmPassword').value;
+
+      if (!oldPwd || !newPwd) {
+        UI.toastError('Error', 'Semua field harus diisi');
+        return;
+      }
+      if (newPwd !== confirmPwd) {
+        UI.toastError('Error', 'Password baru dan konfirmasi tidak cocok');
+        return;
+      }
+      if (newPwd.length < 6) {
+        UI.toastError('Error', 'Password minimal 6 karakter');
+        return;
+      }
+
+      UI.showLoading('Mengubah password...');
+      try {
+        await API.changePassword(oldPwd, newPwd);
+        UI.toastSuccess('Berhasil', 'Password berhasil diubah!');
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+      } catch (err) {
+        UI.toastError('Gagal', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function enableNotifications() {
+      if ('Notification' in window) {
+        if (Notification.permission === 'denied') {
+          showNotifHelpModal();
+          return;
+        }
+        Notification.requestPermission().then(perm => {
+          updateNotifStatus();
+          if (perm === 'granted') {
+            UI.toastSuccess('Berhasil', 'Notifikasi browser berhasil diaktifkan!');
+            UI.sendBrowserNotification('🧬 Penilaian Biologi', 'Notifikasi berhasil diaktifkan! Kamu akan menerima pemberitahuan saat nilai diperbarui.');
+          } else if (perm === 'denied') {
+            UI.toastWarning('Info', 'Izin notifikasi diblokir browser. Buka panduan cara mengaktifkan.');
+            showNotifHelpModal();
+          }
+        });
+      } else {
+        UI.toastError('Error', 'Browser tidak mendukung notifikasi');
+      }
+    }
+
+    function updateNotifStatus() {
+      const el = document.getElementById('notifStatus');
+      if ('Notification' in window) {
+        const perm = Notification.permission;
+        if (perm === 'granted') {
+          el.innerHTML = '✅ Notifikasi browser aktif';
+          el.style.color = 'var(--success)';
+        } else if (perm === 'denied') {
+          el.innerHTML = '❌ Notifikasi diblokir. <a href="#" onclick="showNotifHelpModal(); return false;" style="color:var(--primary-400); text-decoration:underline; font-weight:600; cursor:pointer;">Klik di sini untuk cara mengaktifkan di HP</a>';
+          el.style.color = 'var(--danger)';
+        } else {
+          el.innerHTML = '⏳ Belum diaktifkan';
+          el.style.color = 'var(--warning)';
+        }
+      } else {
+        el.innerHTML = '⚠️ Browser tidak mendukung notifikasi';
+        el.style.color = 'var(--warning)';
+      }
+    }
+
+    function showNotifHelpModal() {
+      const content = `
+        <div style="font-size: 0.875rem; line-height: 1.6;">
+          <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px; color: #fca5a5;">
+            ⚠️ <strong>Izin notifikasi diblokir oleh browser di HP kamu.</strong><br>
+            Karena standar keamanan browser modern, izin yang sudah diblokir tidak bisa dibuka otomatis hanya dengan mengklik tombol web, melainkan harus diizinkan melalui setelan browser HP.
+          </div>
+
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-primary); border-radius: 10px; padding: 14px; margin-bottom: 14px;">
+            <h4 style="margin: 0 0 8px 0; color: #38bdf8; display: flex; align-items: center; gap: 6px;">
+              <span>📱</span> Pengguna HP Android (Google Chrome)
+            </h4>
+            <ol style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+              <li>Perhatikan bilah alamat web di bagian paling atas browser (tempat tertulis link <code>netlify.app</code>).</li>
+              <li>Ketuk ikon <strong>🔒 (Gembok)</strong> atau <strong>🎛️ (Ikon setelan/garis dua)</strong> persis di sebelah kiri alamat web tersebut.</li>
+              <li>Pilih menu <strong>"Izin" (Permissions)</strong>.</li>
+              <li>Ubah toggle <strong>Notifikasi</strong> menjadi <strong>Izinkan (Allow)</strong> atau ketuk <strong>"Reset izin"</strong>.</li>
+              <li><strong>Muat ulang (Refresh)</strong> halaman web ini, lalu ketuk kembali tombol <em>Aktifkan Notifikasi</em>.</li>
+            </ol>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-primary); border-radius: 10px; padding: 14px; margin-bottom: 14px;">
+            <h4 style="margin: 0 0 8px 0; color: #34d399; display: flex; align-items: center; gap: 6px;">
+              <span>🍎</span> Pengguna iPhone / iPad (Safari)
+            </h4>
+            <ol style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+              <li>Di Safari, ketuk tombol <strong>Share / Bagikan (ikon kotak dengan panah ke atas)</strong> di menu bawah layar.</li>
+              <li>Gulir ke bawah dan pilih <strong>"Tambahkan ke Layar Utama" (Add to Home Screen)</strong>.</li>
+              <li>Buka aplikasi dari ikon baru yang muncul di Layar Utama HP.</li>
+              <li>Buka menu Profil dan aktifkan notifikasi.</li>
+            </ol>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-primary); border-radius: 10px; padding: 14px;">
+            <h4 style="margin: 0 0 6px 0; color: #fbbf24; display: flex; align-items: center; gap: 6px;">
+              <span>💡</span> Catatan Penting
+            </h4>
+            <p style="margin: 0;">Jika kamu membuka link ini melalui aplikasi chat (seperti WhatsApp / Telegram in-app browser) atau browser bawaan HP tertentu, ketuk menu titik tiga (⋮) di pojok kanan atas lalu pilih <strong>"Buka di Chrome"</strong>.</p>
+          </div>
+        </div>
+      `;
+      const footer = `<button class="btn btn-primary w-full" onclick="UI.hideModal('notifHelpModal')">Saya Mengerti</button>`;
+      UI.createModal('notifHelpModal', '🔔 Cara Mengaktifkan Notifikasi di HP', content, footer);
+      UI.showModal('notifHelpModal');
+    }
+  </script>
+</body>
+</html>

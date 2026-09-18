@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grafik Perkembangan - Penilaian Biologi</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" type="image/png" href="../images/icon-192.png">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nilai Biologi">
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <button class="sidebar-toggle" aria-label="Menu">☰</button>
+    <div class="sidebar-overlay"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <img src="../images/logo.png" alt="Logo SMA Negeri 2 Ciamis" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkivZZWq710R9bcyNcRC5qdeCUQ-JhiFTtUJ5vYfSG-nGZqXLM-mfZFDnoxuENZ3LWV1Tk9NGomIpD1XygvXTJMbczibyejOxEx6-_Y9rVB_Cr91KdTQuk1UjXwNugQPx-o9ei7t3BxC-f40yuK-bmp47VkKHaoOhOzqESITzCQV50QIxNc32bv65Qom9q/s320/download.png'">
+          </div>
+          <div><div class="brand-text">Penilaian Biologi</div><div class="brand-sub">SMA Negeri 2 Ciamis</div></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Menu</div>
+          <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+          <a href="nilai.html" class="nav-item"><span class="nav-icon">📋</span> Detail Nilai</a>
+          <a href="grafik.html" class="nav-item active"><span class="nav-icon">📈</span> Grafik</a>
+          <a href="profil.html" class="nav-item"><span class="nav-icon">👤</span> Profil</a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">??</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Siswa</div>
+            <div class="user-role" id="userClass">Kelas -</div>
+          </div>
+        </div>
+        <button class="sidebar-logout" onclick="API.logout()"><span>🚪</span> Keluar</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <div>
+            <h1 class="page-title">📈 Grafik Perkembangan</h1>
+            <p class="page-subtitle">Visualisasi perkembangan nilaimu</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Line Charts -->
+        <div class="grid grid-2 mb-6">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">📘 Penilaian Harian</h4>
+            </div>
+            <div class="card-body"><canvas id="chartHarian" height="250"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">🔬 Penilaian Praktikum</h4>
+            </div>
+            <div class="card-body"><canvas id="chartPraktikum" height="250"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid grid-2 mb-6">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">📑 Asesmen Sumatif LM</h4>
+            </div>
+            <div class="card-body"><canvas id="chartASLM" height="250"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">📄 Asesmen Sumatif AS</h4>
+            </div>
+            <div class="card-body"><canvas id="chartASAS" height="250"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Comparison Bar Chart -->
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">📊 Perbandingan Rata-rata per Jenis Penilaian</h4>
+          </div>
+          <div class="card-body">
+            <canvas id="chartComparison" height="280"></canvas>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js"></script>
+  <script>
+    let user;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.requireAuth('siswa')) return;
+      UI.initSidebar();
+
+      user = API.getUser();
+      document.getElementById('userName').textContent = user.nama;
+      UI.renderAvatar(document.getElementById('userAvatar'), user);
+      document.getElementById('userClass').textContent = `Kelas ${user.kelas}`;
+
+      await loadGraphs();
+    });
+
+    async function loadGraphs() {
+      UI.showLoading('Memuat grafik...');
+      try {
+        const res = await API.getStudentGraphData(user.nis);
+        const gd = res.graphData;
+
+        renderLineChart('chartHarian', gd.harian, gd.kkm, 'rgba(59, 130, 246, 1)', 'rgba(59, 130, 246, 0.1)');
+        renderLineChart('chartPraktikum', gd.praktikum, gd.kkm, 'rgba(139, 92, 246, 1)', 'rgba(139, 92, 246, 0.1)');
+        renderLineChart('chartASLM', gd.aslm, gd.kkm, 'rgba(245, 158, 11, 1)', 'rgba(245, 158, 11, 0.1)');
+        renderLineChart('chartASAS', gd.asas, gd.kkm, 'rgba(244, 63, 94, 1)', 'rgba(244, 63, 94, 0.1)');
+        renderComparisonChart(gd.averages, gd.kkm);
+
+      } catch (err) {
+        UI.toastError('Error', err.message);
+      } finally {
+        UI.hideLoading();
+      }
+    }
+
+    function renderLineChart(canvasId, data, kkm, borderColor, bgColor) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+
+      if (!data || data.length === 0) {
+        ctx.font = '14px Inter';
+        ctx.fillStyle = '#6b7280';
+        ctx.textAlign = 'center';
+        ctx.fillText('Belum ada data', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return;
+      }
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.map(d => d.label),
+          datasets: [
+            {
+              label: 'Nilai',
+              data: data.map(d => d.value),
+              borderColor: borderColor,
+              backgroundColor: bgColor,
+              borderWidth: 2,
+              fill: true,
+              tension: 0.3,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              pointBackgroundColor: data.map(d =>
+                d.value >= kkm ? 'rgba(16, 185, 129, 1)' : 'rgba(244, 63, 94, 1)')
+            },
+            {
+              label: 'KKM',
+              data: data.map(() => kkm),
+              borderColor: 'rgba(244, 63, 94, 0.4)',
+              borderWidth: 1,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#9ca3af', usePointStyle: true, font: { size: 11 } } },
+            tooltip: {
+              backgroundColor: '#1f2937', titleColor: '#f9fafb', bodyColor: '#d1d5db',
+              borderColor: '#374151', borderWidth: 1, cornerRadius: 8, padding: 12
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+          }
+        }
+      });
+    }
+
+    function renderComparisonChart(averages, kkm) {
+      const ctx = document.getElementById('chartComparison').getContext('2d');
+      const labels = ['Penilaian Harian', 'Penilaian Praktikum', 'Asesmen Sumatif LM', 'Asesmen Sumatif AS'];
+      const data = [averages.harian || 0, averages.praktikum || 0, averages.aslm || 0, averages.asas || 0];
+      const colors = [
+        'rgba(59, 130, 246, 0.7)',
+        'rgba(139, 92, 246, 0.7)',
+        'rgba(245, 158, 11, 0.7)',
+        'rgba(244, 63, 94, 0.7)'
+      ];
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Rata-rata Nilai',
+              data,
+              backgroundColor: colors,
+              borderColor: colors.map(c => c.replace('0.7', '1')),
+              borderWidth: 1,
+              borderRadius: 8,
+              barThickness: 50
+            },
+            {
+              label: 'KKM',
+              data: [kkm, kkm, kkm, kkm],
+              type: 'line',
+              borderColor: 'rgba(244, 63, 94, 0.6)',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0,
+              order: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#9ca3af', usePointStyle: true, font: { size: 11 } } },
+            tooltip: {
+              backgroundColor: '#1f2937', titleColor: '#f9fafb', bodyColor: '#d1d5db',
+              borderColor: '#374151', borderWidth: 1, cornerRadius: 8, padding: 12
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
