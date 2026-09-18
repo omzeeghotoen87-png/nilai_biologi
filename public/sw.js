@@ -3,7 +3,7 @@
  * Portal Penilaian Biologi - SMA Negeri 2 Ciamis
  */
 
-const CACHE_NAME = 'nilai-biologi-v1.3';
+const CACHE_NAME = 'nilai-biologi-v1.4';
 const STATIC_ASSETS = [
   'index.html',
   'css/global.css',
@@ -27,7 +27,6 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      // Individual cache to ensure one missing asset doesn't break the entire install
       for (const asset of STATIC_ASSETS) {
         try {
           await cache.add(asset);
@@ -40,7 +39,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate & Remove Old Caches
+// Activate & Purge ALL Old Caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -61,7 +60,7 @@ self.addEventListener('message', (event) => {
 
 // Fetch Strategy:
 // 1. Google Apps Script / Dynamic APIs -> Always Network (Never Cache)
-// 2. HTML Navigation -> Network-First (Fallback to Cached exact page if Offline)
+// 2. HTML Navigation -> Direct Network (Fallback to Cache if Offline)
 // 3. Static Assets (CSS, JS, Images) -> Stale-While-Revalidate (Instant load + background refresh)
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
@@ -79,16 +78,9 @@ self.addEventListener('fetch', (event) => {
     (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'));
 
   if (isHtml) {
-    // Network-First for HTML pages so user always sees the newest layout
+    // Direct Network for HTML pages so user always sees the newest layout
     event.respondWith(
       fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-          }
-          return networkResponse;
-        })
         .catch(async () => {
           const cached = await caches.match(event.request);
           if (cached) return cached;

@@ -2,6 +2,36 @@
  * UI Utilities - Toast, Modal, Loading, Helpers
  */
 
+// Mobile Emergency Self-Healing Guard (Prevents ServiceWorker Crash & Reload Loops on Phones)
+if (typeof window !== 'undefined') {
+  try {
+    const RELOAD_KEY = '_biologi_loop_guard';
+    const now = Date.now();
+    const lastTime = parseInt(sessionStorage.getItem(RELOAD_KEY) || '0', 10);
+    if (now - lastTime < 3500) {
+      // Loop detected: phone was forced to reload in < 3.5s! Wipe bad service worker
+      console.warn('⚠️ Mobile loop detected: Unregistering ServiceWorker and clearing caches...');
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          regs.forEach(r => r.unregister());
+        }).catch(() => {});
+      }
+      if ('caches' in window) {
+        caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => {});
+      }
+    }
+    sessionStorage.setItem(RELOAD_KEY, now.toString());
+  } catch (e) { }
+
+  // Global safety nets so mobile webview never crashes from unhandled errors
+  window.addEventListener('error', (e) => {
+    console.warn('Safe caught window error:', e.message);
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    console.warn('Safe caught promise rejection:', e.reason);
+  });
+}
+
 const UI = (() => {
   // ============================================================
   // TOAST NOTIFICATIONS
@@ -299,16 +329,35 @@ const UI = (() => {
   }
 
   function sendBrowserNotification(title, body, icon) {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      const defaultIcon = (window.location.pathname.includes('/guru/') || window.location.pathname.includes('/siswa/')) 
-        ? '../images/logo.png' 
-        : 'images/logo.png';
-      const n = new Notification(title, { body, icon: icon || defaultIcon });
-      n.onclick = () => {
-        window.focus();
-        n.close();
-      };
-      setTimeout(() => n.close(), 8000);
+    try {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const defaultIcon = (window.location.pathname.includes('/guru/') || window.location.pathname.includes('/siswa/')) 
+          ? '../images/logo.png' 
+          : 'images/logo.png';
+        const notifIcon = icon || defaultIcon;
+
+        // Android Chrome requires serviceWorkerRegistration.showNotification instead of new Notification()
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then(reg => {
+            if (reg && typeof reg.showNotification === 'function') {
+              reg.showNotification(title, { body, icon: notifIcon });
+            }
+          }).catch(() => {});
+        } else {
+          try {
+            const n = new Notification(title, { body, icon: notifIcon });
+            n.onclick = () => {
+              window.focus();
+              try { n.close(); } catch (e) {}
+            };
+            setTimeout(() => { try { n.close(); } catch (e) {} }, 8000);
+          } catch (err) {
+            console.warn('Native Notification constructor unsupported on this device:', err);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Notification error caught safely:', e);
     }
   }
 

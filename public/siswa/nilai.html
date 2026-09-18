@@ -516,7 +516,7 @@
       }
     }
 
-    window.addEventListener('beforeunload', () => UI.stopPolling());
+    window.addEventListener('pagehide', () => UI.stopPolling());
   </script>
 </body>
 </html>

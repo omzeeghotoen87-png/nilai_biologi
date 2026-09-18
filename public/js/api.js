@@ -139,12 +139,7 @@ const API = (() => {
       sessionStorage.setItem('just_logged_out', '1');
     } catch (e) { }
 
-    // Coba tutup jendela jika dibuka sebagai popup / standalone window
-    try {
-      window.close();
-    } catch (e) { }
-
-    // Arahkan ke halaman login index.html (bukan '/')
+    // Arahkan ke halaman login index.html
     window.location.replace(getLoginUrl());
   }
 
